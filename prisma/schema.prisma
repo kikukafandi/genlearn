@@ -1,0 +1,52 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int    @id @default(autoincrement())
+  name       String
+  email      String @unique
+  password   String
+  createdAt  DateTime @default(now())
+
+  dnaSkill      UserDnaSkill?
+  dnaPsychology UserDnaPsychology?
+}
+
+model UserDnaSkill {
+  id          Int     @id @default(autoincrement())
+  userId      Int     @unique
+  rawSkills   String  @db.Text
+  experiences String  @db.Text
+  interest    String  @db.Text
+  skillStrong String  @db.Text
+  skillMedium String  @db.Text
+  skillWeak   String  @db.Text
+
+  User User @relation(fields: [userId], references: [id])
+}
+
+model UserDnaPsychology {
+  id         Int  @id @default(autoincrement())
+  userId     Int  @unique
+  cognitive  String @db.Text
+  learning   String @db.Text
+  motivation String @db.Text
+  trait      String @db.Text
+  answers    String @db.Text
+
+  User User @relation(fields: [userId], references: [id])
+}
+
+model Major {
+  id          Int    @id @default(autoincrement())
+  name        String
+  description String @db.Text
+  traits      String @db.Text
+  mk          String @db.Text
+}
