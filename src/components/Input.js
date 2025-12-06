@@ -11,7 +11,7 @@ export default function Input({
   return (
     <div className={`mb-4 ${className}`}>
       {label && (
-        <label htmlFor={name} className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor={name} className="block text-sm font-semibold text-gray-700 mb-2">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
         </label>
@@ -24,7 +24,7 @@ export default function Input({
         onChange={onChange}
         placeholder={placeholder}
         required={required}
-        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+        className="w-full px-5 py-3 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all duration-300 hover:border-gray-300 bg-white shadow-sm"
       />
     </div>
   );
