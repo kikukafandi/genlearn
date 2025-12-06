@@ -1,6 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  /* config options here */
+  // Disable static optimization for pages with useSearchParams
+  // All pages will be dynamically rendered
 };
 
 export default nextConfig;

@@ -2,12 +2,12 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import Navbar from '@/components/Navbar';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
 
-export default function MinimumKeilmuanPage() {
+function MinimumKeilmuanContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -15,7 +15,7 @@ export default function MinimumKeilmuanPage() {
   const [majors, setMajors] = useState([]);
   const [selectedMajor, setSelectedMajor] = useState(null);
 
-  const majorId = searchParams.get('major');
+  const majorId = searchParams?.get('major');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -165,5 +165,17 @@ export default function MinimumKeilmuanPage() {
         )}
       </main>
     </div>
+  );
+}
+
+export default function MinimumKeilmuanPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <p className="text-gray-600">Loading...</p>
+      </div>
+    }>
+      <MinimumKeilmuanContent />
+    </Suspense>
   );
 }
