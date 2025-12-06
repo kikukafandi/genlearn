@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# GenLearn - Platform Pembelajaran Adaptif
+
+Platform pembelajaran adaptif yang membantu mahasiswa menemukan jurusan ideal berdasarkan DNA skill dan psikologi.
+
+## Tech Stack
+
+- **Framework**: Next.js 14 (App Router)
+- **Language**: JavaScript
+- **Styling**: Tailwind CSS
+- **Database**: MySQL
+- **ORM**: Prisma
+- **Authentication**: NextAuth.js (Auth.js)
+- **Password Hashing**: bcryptjs
+
+## Features
+
+1. **Authentication System** - Register & Login dengan credentials
+2. **DNA Assessment** - DNA Skill dan Psikologi
+3. **Major Matching** - Rekomendasi 10 jurusan dengan scoring
+4. **Minimum Keilmuan** - Persyaratan minimum setiap jurusan
+5. **Modul Pembelajaran** - Program 4 minggu adaptif
+6. **Simulator** - Simulasi tugas kuliah per jurusan
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Setup Database
+
+```bash
+# Buat database MySQL
+CREATE DATABASE genlearn;
+
+# Copy environment file
+cp .env.example .env
+
+# Edit .env dengan kredensial database Anda
+```
+
+### 3. Run Prisma
+
+```bash
+npx prisma generate
+npx prisma db push
+npx prisma db seed
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+/src
+  /app              # Pages and API routes
+  /components       # Reusable UI components
+  /lib              # Libraries (auth, prisma)
+  middleware.js     # Route protection
+/prisma             # Database schema and seeder
+```
+
+## Usage Flow
+
+1. Register → Login → Dashboard
+2. DNA Assessment → Major Matching
+3. Select Major → Minimum Keilmuan
+4. Modules → Simulator
 
 ## Learn More
 
-To learn more about Next.js, take a look at the following resources:
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [NextAuth.js Documentation](https://next-auth.js.org)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
