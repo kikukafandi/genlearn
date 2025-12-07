@@ -1,5 +1,13 @@
 import "./globals.css";
 import Providers from "@/components/Providers";
+import { Montserrat } from "next/font/google";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800", "900"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
 
 export const metadata = {
   title: "GenLearn - Platform Pembelajaran Adaptif",
@@ -16,8 +24,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id">
-      <body className="antialiased">
+    <html lang="id" className={montserrat.variable}>
+      <body className={`${montserrat.className} antialiased`}>
         <Providers>{children}</Providers>
       </body>
     </html>

@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, Suspense } from 'react';
-import { signIn } from 'next-auth/react';
+import { useState, Suspense, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Input from '@/components/Input';
@@ -10,11 +10,12 @@ import Card from '@/components/Card';
 import { useTheme } from '@/contexts/ThemeContext';
 import { HiBeaker } from 'react-icons/hi2';
 import { MdLogin } from 'react-icons/md';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaGoogle } from 'react-icons/fa';
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { data: session, status } = useSession();
   const { theme } = useTheme();
   const [formData, setFormData] = useState({
     email: '',
@@ -22,8 +23,41 @@ function LoginForm() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const registered = searchParams.get('registered');
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/dashboard');
+    }
+  }, [status, router]);
+
+  const handleGoogleLogin = async () => {
+    setGoogleLoading(true);
+    try {
+      await signIn('google', { callbackUrl: '/dashboard' });
+    } catch (err) {
+      setError('Gagal login dengan Google');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  // Show loading while checking session
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  // Don't render if authenticated (redirecting)
+  if (status === 'authenticated') {
+    return null;
+  }
 
   const handleChange = (e) => {
     setFormData({
@@ -136,6 +170,28 @@ function LoginForm() {
               {loading ? 'Login...' : 'Login Sekarang'}
             </Button>
           </form>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className={`px-4 ${theme === 'dark' ? 'bg-white text-gray-500' : 'bg-white text-gray-500'}`}>atau</span>
+            </div>
+          </div>
+
+          {/* Google Login Button */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleGoogleLogin}
+            disabled={googleLoading}
+            className="w-full flex items-center justify-center gap-3 py-3"
+          >
+            <FaGoogle className="text-red-500" />
+            {googleLoading ? 'Menghubungkan...' : 'Login dengan Google'}
+          </Button>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">

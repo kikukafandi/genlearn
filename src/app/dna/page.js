@@ -9,6 +9,7 @@ import Button from '@/components/Button';
 import Input from '@/components/Input';
 import DnaHelix from '@/components/DnaHelix';
 import DnaNetwork from '@/components/DnaNetwork';
+import Modal, { ConfirmModal, SuccessModal, ErrorModal } from '@/components/Modal';
 import { useTheme } from '@/contexts/ThemeContext';
 import { FaDna, FaNetworkWired, FaFire, FaStar, FaChartLine } from 'react-icons/fa';
 import { GiBrain, GiBookshelf } from 'react-icons/gi';
@@ -36,6 +37,12 @@ export default function DnaPage() {
   const [loading, setLoading] = useState(false);
   const [existingData, setExistingData] = useState(null);
   const [viewMode, setViewMode] = useState('helix'); // 'helix' or 'network'
+
+  // Modal states
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // Step 1: Skill data
   const [skillData, setSkillData] = useState({
@@ -86,20 +93,27 @@ export default function DnaPage() {
   const handleNextStep = () => {
     if (step === 1) {
       if (!skillData.rawSkills || !skillData.experiences || !skillData.interest) {
-        alert('Mohon lengkapi semua field');
+        setErrorMessage('Mohon lengkapi semua field sebelum melanjutkan.');
+        setShowErrorModal(true);
         return;
       }
       setStep(2);
     }
   };
 
-  const handleSubmit = async () => {
+  const handleSubmitClick = () => {
     // Check all questions answered
     if (Object.keys(psychologyAnswers).length < psychologyQuestions.length) {
-      alert('Mohon jawab semua pertanyaan');
+      setErrorMessage('Mohon jawab semua pertanyaan sebelum menyimpan.');
+      setShowErrorModal(true);
       return;
     }
+    // Show confirmation modal
+    setShowConfirmModal(true);
+  };
 
+  const handleSubmit = async () => {
+    setShowConfirmModal(false);
     setLoading(true);
 
     try {
@@ -115,30 +129,40 @@ export default function DnaPage() {
       });
 
       if (res.ok) {
-        const result = await res.json();
-        router.push('/dna/result');
+        setShowSuccessModal(true);
       } else {
         const error = await res.json();
-        alert(error.error || 'Terjadi kesalahan');
+        setErrorMessage(error.error || 'Terjadi kesalahan saat menyimpan data.');
+        setShowErrorModal(true);
       }
     } catch (error) {
       console.error('Submit error:', error);
-      alert('Terjadi kesalahan saat menyimpan data');
+      setErrorMessage('Terjadi kesalahan saat menyimpan data. Silakan coba lagi.');
+      setShowErrorModal(true);
     } finally {
       setLoading(false);
     }
   };
 
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    router.push('/major-matching');
+  };
+
   if (status === 'loading') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100">
+      <div className={`min-h-screen transition-colors duration-500 ${
+        theme === 'dark' 
+          ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' 
+          : 'bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100'
+      }`}>
         <Navbar />
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-xl mx-auto mb-4 animate-pulse-glow">
-              <span className="text-3xl">🧬</span>
+              <FaDna className="text-3xl text-white" />
             </div>
-            <p className="text-gray-600 font-medium">Loading...</p>
+            <p className={`font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Loading...</p>
           </div>
         </div>
       </div>
@@ -215,7 +239,7 @@ export default function DnaPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
                   <FaFire className="text-2xl text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900">DNA Skill</h2>
+                <h2 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>DNA Skill</h2>
               </div>
               <div className="grid md:grid-cols-3 gap-5">
                 <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl border-2 border-green-300 shadow-lg hover:shadow-xl transition-all">
@@ -247,7 +271,7 @@ export default function DnaPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
                   <GiBrain className="text-2xl text-white" />
                 </div>
-                <h2 className="text-3xl font-bold text-gray-900">DNA Psikologi</h2>
+                <h2 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>DNA Psikologi</h2>
               </div>
               <div className="grid md:grid-cols-2 gap-5">
                 <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl border-2 border-blue-300 shadow-lg hover:shadow-xl transition-all">
@@ -292,10 +316,18 @@ export default function DnaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100 relative overflow-hidden">
+    <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${
+      theme === 'dark' 
+        ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' 
+        : 'bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100'
+    }`}>
       {/* Bubble Background */}
-      <div className="absolute top-20 left-10 w-64 h-64 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-      <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{animationDelay: '1.5s'}}></div>
+      <div className={`absolute top-20 left-10 w-64 h-64 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float ${
+        theme === 'dark' ? 'bg-blue-600' : 'bg-blue-300'
+      }`}></div>
+      <div className={`absolute bottom-20 right-10 w-72 h-72 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float ${
+        theme === 'dark' ? 'bg-purple-600' : 'bg-purple-300'
+      }`} style={{animationDelay: '1.5s'}}></div>
       
       <Navbar />
       
@@ -303,11 +335,11 @@ export default function DnaPage() {
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
             <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-xl">
-              <span className="text-3xl">🧬</span>
+              <FaDna className="text-3xl text-white" />
             </div>
             <div>
               <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">DNA Assessment</h1>
-              <p className="text-gray-600 mt-1 text-lg">
+              <p className={`mt-1 text-lg ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                 Lengkapi profil DNA skill dan psikologi Anda
               </p>
             </div>
@@ -317,12 +349,16 @@ export default function DnaPage() {
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-base font-semibold text-gray-700">Step {step} of 2</span>
-            <span className="text-sm text-gray-500 font-medium px-4 py-2 bg-white rounded-full shadow">
+            <span className={`text-base font-semibold ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Step {step} of 2</span>
+            <span className={`text-sm font-medium px-4 py-2 rounded-full shadow ${
+              theme === 'dark' ? 'bg-zinc-800 text-gray-200' : 'bg-white text-gray-500'
+            }`}>
               {step === 1 ? '💪 DNA Skill' : '🧠 DNA Psikologi'}
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden shadow-inner">
+          <div className={`w-full rounded-full h-3 overflow-hidden shadow-inner ${
+            theme === 'dark' ? 'bg-zinc-700' : 'bg-gray-200'
+          }`}>
             <div
               className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500 shadow-lg"
               style={{ width: `${(step / 2) * 100}%` }}
@@ -334,13 +370,13 @@ export default function DnaPage() {
           <Card>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-3xl">💪</span>
+                <FaFire className="text-3xl text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900">DNA Skill</h2>
+              <h2 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>DNA Skill</h2>
             </div>
             
             <div className="mb-5">
-              <label className="block text-base font-bold text-gray-800 mb-3">
+              <label className={`block text-base font-bold mb-3 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
                 Skill yang Anda Miliki <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -348,14 +384,18 @@ export default function DnaPage() {
                 value={skillData.rawSkills}
                 onChange={handleSkillChange}
                 placeholder="Contoh: programming, desain grafis, public speaking, analisis data"
-                className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all bg-white shadow-sm hover:border-gray-300"
+                className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all shadow-sm ${
+                  theme === 'dark' 
+                    ? 'bg-zinc-800 border-zinc-600 text-white placeholder-gray-400 hover:border-zinc-500' 
+                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 hover:border-gray-300'
+                }`}
                 rows="3"
                 required
               />
             </div>
 
             <div className="mb-5">
-              <label className="block text-base font-bold text-gray-800 mb-3">
+              <label className={`block text-base font-bold mb-3 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
                 Pengalaman Anda <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -363,14 +403,18 @@ export default function DnaPage() {
                 value={skillData.experiences}
                 onChange={handleSkillChange}
                 placeholder="Contoh: organisasi, magang, proyek, kompetisi"
-                className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all bg-white shadow-sm hover:border-gray-300"
+                className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all shadow-sm ${
+                  theme === 'dark' 
+                    ? 'bg-zinc-800 border-zinc-600 text-white placeholder-gray-400 hover:border-zinc-500' 
+                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 hover:border-gray-300'
+                }`}
                 rows="3"
                 required
               />
             </div>
 
             <div className="mb-6">
-              <label className="block text-base font-bold text-gray-800 mb-3">
+              <label className={`block text-base font-bold mb-3 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
                 Minat Awal Anda <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -378,7 +422,11 @@ export default function DnaPage() {
                 value={skillData.interest}
                 onChange={handleSkillChange}
                 placeholder="Contoh: teknologi, seni, bisnis, kesehatan"
-                className="w-full px-5 py-4 border-2 border-gray-200 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all bg-white shadow-sm hover:border-gray-300"
+                className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all shadow-sm ${
+                  theme === 'dark' 
+                    ? 'bg-zinc-800 border-zinc-600 text-white placeholder-gray-400 hover:border-zinc-500' 
+                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 hover:border-gray-300'
+                }`}
                 rows="3"
                 required
               />
@@ -394,21 +442,27 @@ export default function DnaPage() {
           <Card>
             <div className="flex items-center gap-3 mb-6">
               <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-                <span className="text-3xl">🧠</span>
+                <GiBrain className="text-3xl text-white" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900">DNA Psikologi</h2>
+              <h2 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>DNA Psikologi</h2>
             </div>
-            <p className="text-gray-600 mb-6 leading-relaxed bg-blue-50 p-4 rounded-2xl border-2 border-blue-200">
+            <p className={`mb-6 leading-relaxed p-4 rounded-2xl border-2 ${
+              theme === 'dark' 
+                ? 'bg-blue-900/30 border-blue-700 text-gray-200' 
+                : 'bg-blue-50 border-blue-200 text-gray-600'
+            }`}>
               <span className="font-semibold">📝 Petunjuk:</span> Jawab pertanyaan berikut dengan skala 1-5<br/>
               <span className="text-sm">(1 = Sangat Tidak Setuju, 5 = Sangat Setuju)</span>
             </p>
 
             <div className="space-y-6">
               {psychologyQuestions.map((q) => (
-                <div key={q.id} className="pb-6 border-b-2 border-gray-100 last:border-0">
-                  <p className="font-bold text-gray-900 mb-5 text-lg">{q.id}. {q.question}</p>
+                <div key={q.id} className={`pb-6 border-b-2 last:border-0 ${
+                  theme === 'dark' ? 'border-zinc-700' : 'border-gray-100'
+                }`}>
+                  <p className={`font-bold mb-5 text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{q.id}. {q.question}</p>
                   <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <span className="text-xs text-gray-500 font-medium hidden sm:block">Sangat Tidak Setuju</span>
+                    <span className={`text-xs font-medium hidden sm:block ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Sangat Tidak Setuju</span>
                     <div className="flex gap-3">
                       {[1, 2, 3, 4, 5].map((value) => (
                         <button
@@ -417,14 +471,16 @@ export default function DnaPage() {
                           className={`w-14 h-14 rounded-full border-3 transition-all duration-300 font-bold text-lg shadow-lg ${
                             psychologyAnswers[q.id] === value
                               ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white border-blue-600 scale-110 shadow-xl'
-                              : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:scale-105'
+                              : theme === 'dark'
+                                ? 'bg-zinc-700 text-gray-200 border-zinc-600 hover:border-blue-400 hover:scale-105'
+                                : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:scale-105'
                           }`}
                         >
                           {value}
                         </button>
                       ))}
                     </div>
-                    <span className="text-xs text-gray-500 font-medium hidden sm:block">Sangat Setuju</span>
+                    <span className={`text-xs font-medium hidden sm:block ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Sangat Setuju</span>
                   </div>
                 </div>
               ))}
@@ -435,7 +491,7 @@ export default function DnaPage() {
                 ⬅️ Kembali
               </Button>
               <Button 
-                onClick={handleSubmit} 
+                onClick={handleSubmitClick} 
                 disabled={loading}
                 className="flex-1"
               >
@@ -444,6 +500,34 @@ export default function DnaPage() {
             </div>
           </Card>
         )}
+
+        {/* Modals */}
+        <ConfirmModal
+          isOpen={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={handleSubmit}
+          title="Konfirmasi Simpan Assessment"
+          message="Apakah Anda yakin ingin menyimpan DNA Assessment ini? Data yang tersimpan akan digunakan untuk matching jurusan."
+          confirmText="Ya, Simpan"
+          cancelText="Batal"
+          type="info"
+        />
+
+        <SuccessModal
+          isOpen={showSuccessModal}
+          onClose={handleSuccessClose}
+          title="Assessment Berhasil Disimpan!"
+          message="DNA Assessment Anda telah berhasil disimpan. Anda akan diarahkan ke halaman Matching Jurusan."
+          buttonText="Lanjut ke Matching"
+        />
+
+        <ErrorModal
+          isOpen={showErrorModal}
+          onClose={() => setShowErrorModal(false)}
+          title="Terjadi Kesalahan"
+          message={errorMessage}
+          buttonText="Tutup"
+        />
       </main>
     </div>
   );

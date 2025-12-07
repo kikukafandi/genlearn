@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Input from '@/components/Input';
@@ -8,10 +9,11 @@ import Button from '@/components/Button';
 import Card from '@/components/Card';
 import { useTheme } from '@/contexts/ThemeContext';
 import { HiBeaker } from 'react-icons/hi2';
-import { FaUserPlus, FaTimesCircle } from 'react-icons/fa';
+import { FaUserPlus, FaTimesCircle, FaGoogle } from 'react-icons/fa';
 
 export default function RegisterPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const { theme } = useTheme();
   const [formData, setFormData] = useState({
     name: '',
@@ -20,6 +22,39 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.push('/dashboard');
+    }
+  }, [status, router]);
+
+  const handleGoogleSignup = async () => {
+    setGoogleLoading(true);
+    try {
+      await signIn('google', { callbackUrl: '/dashboard' });
+    } catch (err) {
+      setError('Gagal daftar dengan Google');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
+  // Show loading while checking session
+  if (status === 'loading') {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  // Don't render if authenticated (redirecting)
+  if (status === 'authenticated') {
+    return null;
+  }
 
   const handleChange = (e) => {
     setFormData({
@@ -136,6 +171,28 @@ export default function RegisterPage() {
               {loading ? 'Mendaftar...' : 'Daftar Sekarang'}
             </Button>
           </form>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-gray-300"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className={`px-4 ${theme === 'dark' ? 'bg-zinc-800 text-gray-400' : 'bg-white text-gray-500'}`}>atau</span>
+            </div>
+          </div>
+
+          {/* Google Signup Button */}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleGoogleSignup}
+            disabled={googleLoading}
+            className="w-full flex items-center justify-center gap-3 py-3"
+          >
+            <FaGoogle className="text-red-500" />
+            {googleLoading ? 'Menghubungkan...' : 'Daftar dengan Google'}
+          </Button>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">

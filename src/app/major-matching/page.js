@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
+import { ConfirmModal, SuccessModal } from '@/components/Modal';
 import { useTheme } from '@/contexts/ThemeContext';
 import { BiTargetLock } from 'react-icons/bi';
 import { FaUniversity, FaCheckCircle, FaTrophy, FaMedal } from 'react-icons/fa';
@@ -19,6 +20,12 @@ export default function MajorMatchingPage() {
   const [loading, setLoading] = useState(true);
   const [matches, setMatches] = useState([]);
   const [selectedMajor, setSelectedMajor] = useState(null);
+  
+  // Modal states
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [pendingMajorId, setPendingMajorId] = useState(null);
+  const [pendingMajorName, setPendingMajorName] = useState('');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -47,23 +54,35 @@ export default function MajorMatchingPage() {
     }
   };
 
-  const handleSelectMajor = async (majorId) => {
+  const handleSelectMajorClick = (majorId, majorName) => {
+    setPendingMajorId(majorId);
+    setPendingMajorName(majorName);
+    setShowConfirmModal(true);
+  };
+
+  const handleSelectMajor = async () => {
+    setShowConfirmModal(false);
     try {
       const res = await fetch('/api/major/select', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ majorId })
+        body: JSON.stringify({ majorId: pendingMajorId })
       });
 
       if (res.ok) {
-        setSelectedMajor(majorId);
-        alert('Jurusan berhasil dipilih!');
+        setSelectedMajor(pendingMajorId);
+        setShowSuccessModal(true);
       }
     } catch (error) {
       console.error('Error selecting major:', error);
     }
+  };
+
+  const handleSuccessClose = () => {
+    setShowSuccessModal(false);
+    router.push(`/minimum-keilmuan?major=${pendingMajorId}`);
   };
 
   if (status === 'loading' || loading) {
@@ -212,7 +231,7 @@ export default function MajorMatchingPage() {
 
                 <div className="flex gap-3 mt-6">
                   <Button
-                    onClick={() => handleSelectMajor(match.id)}
+                    onClick={() => handleSelectMajorClick(match.id, match.name)}
                     disabled={selectedMajor === match.id}
                     className="flex-1 flex items-center justify-center gap-2"
                   >
@@ -288,6 +307,26 @@ export default function MajorMatchingPage() {
             </div>
           </Card>
         )}
+
+        {/* Modals */}
+        <ConfirmModal
+          isOpen={showConfirmModal}
+          onClose={() => setShowConfirmModal(false)}
+          onConfirm={handleSelectMajor}
+          title="Konfirmasi Pilihan Jurusan"
+          message={`Apakah Anda yakin ingin memilih "${pendingMajorName}" sebagai jurusan pilihan Anda?`}
+          confirmText="Ya, Pilih"
+          cancelText="Batal"
+          type="info"
+        />
+
+        <SuccessModal
+          isOpen={showSuccessModal}
+          onClose={handleSuccessClose}
+          title="Jurusan Berhasil Dipilih!"
+          message={`Selamat! "${pendingMajorName}" telah dipilih sebagai jurusan Anda. Anda akan diarahkan ke halaman Minimum Keilmuan.`}
+          buttonText="Lihat Minimum Keilmuan"
+        />
       </main>
     </div>
   );
