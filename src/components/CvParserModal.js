@@ -17,11 +17,11 @@ export default function CvParserModal({ isOpen, onClose, onDataExtracted }) {
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.type === 'text/plain' || file.type === 'application/pdf' || file.name.endsWith('.txt') || file.name.endsWith('.pdf')) {
+      if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
         setCvFile(file);
         setError('');
       } else {
-        setError('Format file tidak didukung. Gunakan .pdf atau .txt');
+        setError('Format file tidak didukung. Gunakan .txt');
         setCvFile(null);
       }
     }
@@ -178,11 +178,11 @@ export default function CvParserModal({ isOpen, onClose, onDataExtracted }) {
             <label className={`block text-sm font-semibold mb-3 ${
               theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
             }`}>
-              Upload File CV (.pdf atau .txt):
+              Upload File CV (.txt):
             </label>
             <input
               type="file"
-              accept=".pdf,.txt"
+              accept=".txt"
               onChange={handleFileChange}
               className={`w-full px-4 py-3 rounded-xl border-2 transition-all ${
                 theme === 'dark'

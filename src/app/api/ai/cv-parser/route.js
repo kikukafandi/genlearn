@@ -45,7 +45,7 @@ export async function POST(request) {
                     cvText = await cvFile.text();
                 } else {
                     return NextResponse.json(
-                        { success: false, error: 'Format file tidak didukung. Gunakan .pdf atau .txt file.' },
+                        { success: false, error: 'Format file tidak didukung. Gunakan .txt file.' },
                         { status: 400 }
                     );
                 }

@@ -9,14 +9,14 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
  * @returns {Promise<Object>} - Extracted DNA skill data
  */
 export async function parseCvForDnaSkill(cvText) {
-  try {
-    if (!cvText || cvText.trim().length === 0) {
-      throw new Error('CV text cannot be empty');
-    }
+    try {
+        if (!cvText || cvText.trim().length === 0) {
+            throw new Error('CV text cannot be empty');
+        }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-    const prompt = `Analisis CV berikut dan ekstrak informasi skill, pengalaman, dan minat untuk digunakan dalam DNA Assessment.
+        const prompt = `Analisis CV berikut dan ekstrak informasi skill, pengalaman, dan minat untuk digunakan dalam DNA Assessment.
 
 == CV TEXT ==
 ${cvText}
@@ -44,61 +44,57 @@ ATURAN:
 - KEMBALIKAN HANYA JSON, TANPA MARKDOWN CODE BLOCK
 - Pastikan format JSON valid`;
 
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text();
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
 
-    // Parse JSON dari response
-    const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
-    const extractedData = JSON.parse(cleanText);
+        // Parse JSON dari response
+        const cleanText = text.replace(/```json\n?|\n?```/g, '').trim();
+        const extractedData = JSON.parse(cleanText);
 
-    return {
-      success: true,
-      data: {
-        rawSkills: extractedData.skillStrong || '',
-        experiences: extractedData.experiences || '',
-        interest: extractedData.interest || '',
-        skillMedium: extractedData.skillMedium || '',
-        skillWeak: extractedData.skillWeak || '',
-        summary: extractedData.summary || ''
-      }
-    };
-  } catch (error) {
-    console.error('Error parsing CV:', error);
-    
-    // Return more specific error messages
-    if (error instanceof SyntaxError) {
-      throw new Error('Gagal memproses respons AI. Format tidak valid. Silakan coba lagi.');
+        return {
+            success: true,
+            data: {
+                rawSkills: extractedData.skillStrong || '',
+                experiences: extractedData.experiences || '',
+                interest: extractedData.interest || '',
+                skillMedium: extractedData.skillMedium || '',
+                skillWeak: extractedData.skillWeak || '',
+                summary: extractedData.summary || ''
+            }
+        };
+    } catch (error) {
+        console.error('Error parsing CV:', error);
+
+        // Return more specific error messages
+        if (error instanceof SyntaxError) {
+            throw new Error('Gagal memproses respons AI. Format tidak valid. Silakan coba lagi.');
+        }
+
+        if (error.message?.includes('Empty content')) {
+            throw new Error('CV terlalu pendek atau kosong. Pastikan CV memiliki konten yang cukup.');
+        }
+
+        throw new Error(error.message || 'Gagal mem-parse CV. Silakan coba lagi.');
     }
-    
-    if (error.message?.includes('Empty content')) {
-      throw new Error('CV terlalu pendek atau kosong. Pastikan CV memiliki konten yang cukup.');
-    }
-
-    throw new Error(error.message || 'Gagal mem-parse CV. Silakan coba lagi.');
-  }
 }
 
 /**
- * Extract text from CV file (supports PDF and plain text)
- * @param {File} file - CV file
+ * Extract text from CV file (supports plain text only)
+ * @param {File} file - CV file (.txt)
  * @returns {Promise<string>} - Extracted text from file
  */
 export async function extractTextFromFile(file) {
-  try {
-    if (file.type === 'text/plain') {
-      // For .txt files
-      const text = await file.text();
-      return text;
-    } else if (file.type === 'application/pdf' || file.name.endsWith('.pdf')) {
-      // For PDF files - using pdf-parse on server-side would be better
-      // Return instruction to use API for PDF parsing
-      throw new Error('PDF harus diproses di server. Mohon gunakan API endpoint.');
-    } else {
-      throw new Error('Format file tidak didukung. Gunakan .txt atau .pdf atau copy-paste teks CV.');
+    try {
+        if (file.type === 'text/plain' || file.name.endsWith('.txt')) {
+            // For .txt files
+            const text = await file.text();
+            return text;
+        } else {
+            throw new Error('Format file tidak didukung. Gunakan .txt atau copy-paste teks CV.');
+        }
+    } catch (error) {
+        console.error('Error extracting text from file:', error);
+        throw error;
     }
-  } catch (error) {
-    console.error('Error extracting text from file:', error);
-    throw error;
-  }
 }
