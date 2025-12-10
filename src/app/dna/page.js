@@ -10,9 +10,8 @@ import Input from '@/components/Input';
 import DnaHelix from '@/components/DnaHelix';
 import DnaNetwork from '@/components/DnaNetwork';
 import Modal, { ConfirmModal, SuccessModal, ErrorModal } from '@/components/Modal';
-import CvParserModal from '@/components/CvParserModal';
 import { useTheme } from '@/contexts/ThemeContext';
-import { FaDna, FaNetworkWired, FaFire, FaStar, FaChartLine, FaRobot, FaClipboard } from 'react-icons/fa';
+import { FaDna, FaNetworkWired, FaFire, FaStar, FaChartLine, FaRobot } from 'react-icons/fa';
 import { GiBrain, GiBookshelf } from 'react-icons/gi';
 import { MdPsychology, MdEmojiPeople, MdSchool } from 'react-icons/md';
 import { BiTargetLock } from 'react-icons/bi';
@@ -50,9 +49,6 @@ export default function DnaPage() {
   const [aiNarrative, setAiNarrative] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [showAiSection, setShowAiSection] = useState(false);
-
-  // CV Parser modal state
-  const [showCvParserModal, setShowCvParserModal] = useState(false);
 
   // Step 1: Skill data
   const [skillData, setSkillData] = useState({
@@ -109,15 +105,6 @@ export default function DnaPage() {
       }
       setStep(2);
     }
-  };
-
-  // Handle CV data extracted from parser
-  const handleCvDataExtracted = (cvData) => {
-    setSkillData({
-      rawSkills: cvData.rawSkills || '',
-      experiences: cvData.experiences || '',
-      interest: cvData.interest || ''
-    });
   };
 
   const handleSubmitClick = () => {
@@ -581,13 +568,6 @@ export default function DnaPage() {
             </div>
 
             <div className="flex gap-3">
-              <Button
-                onClick={() => setShowCvParserModal(true)}
-                variant="outline"
-                className="flex-1 flex items-center justify-center gap-2"
-              >
-                <FaClipboard /> Parse dari CV
-              </Button>
               <Button onClick={handleNextStep} className="flex-1">
                 ➡️ Lanjut ke Pertanyaan Psikologi
               </Button>
@@ -686,11 +666,6 @@ export default function DnaPage() {
           buttonText="Tutup"
         />
 
-        <CvParserModal
-          isOpen={showCvParserModal}
-          onClose={() => setShowCvParserModal(false)}
-          onDataExtracted={handleCvDataExtracted}
-        />
       </main>
     </div>
   );
