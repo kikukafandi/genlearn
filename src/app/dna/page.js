@@ -10,11 +10,13 @@ import Input from '@/components/Input';
 import DnaHelix from '@/components/DnaHelix';
 import DnaNetwork from '@/components/DnaNetwork';
 import Modal, { ConfirmModal, SuccessModal, ErrorModal } from '@/components/Modal';
+import CvParserModal from '@/components/CvParserModal';
 import { useTheme } from '@/contexts/ThemeContext';
-import { FaDna, FaNetworkWired, FaFire, FaStar, FaChartLine } from 'react-icons/fa';
+import { FaDna, FaNetworkWired, FaFire, FaStar, FaChartLine, FaRobot, FaClipboard } from 'react-icons/fa';
 import { GiBrain, GiBookshelf } from 'react-icons/gi';
 import { MdPsychology, MdEmojiPeople, MdSchool } from 'react-icons/md';
 import { BiTargetLock } from 'react-icons/bi';
+import { HiSparkles } from 'react-icons/hi2';
 
 const psychologyQuestions = [
   { id: 1, question: 'Saya lebih suka bekerja dengan data dan angka', category: 'cognitive' },
@@ -43,6 +45,14 @@ export default function DnaPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // AI Interpretation states
+  const [aiNarrative, setAiNarrative] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [showAiSection, setShowAiSection] = useState(false);
+
+  // CV Parser modal state
+  const [showCvParserModal, setShowCvParserModal] = useState(false);
 
   // Step 1: Skill data
   const [skillData, setSkillData] = useState({
@@ -101,6 +111,15 @@ export default function DnaPage() {
     }
   };
 
+  // Handle CV data extracted from parser
+  const handleCvDataExtracted = (cvData) => {
+    setSkillData({
+      rawSkills: cvData.rawSkills || '',
+      experiences: cvData.experiences || '',
+      interest: cvData.interest || ''
+    });
+  };
+
   const handleSubmitClick = () => {
     // Check all questions answered
     if (Object.keys(psychologyAnswers).length < psychologyQuestions.length) {
@@ -147,6 +166,47 @@ export default function DnaPage() {
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
     router.push('/major-matching');
+  };
+
+  // Generate AI Interpretation
+  const generateAiInterpretation = async () => {
+    if (!existingData?.dnaSkill || !existingData?.dnaPsychology) {
+      setErrorMessage('Data DNA tidak lengkap untuk menghasilkan interpretasi.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    setAiLoading(true);
+    setShowAiSection(true);
+
+    try {
+      const res = await fetch('/api/ai/dna-interpretation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          dnaSkill: existingData.dnaSkill,
+          dnaPsycho: existingData.dnaPsychology,
+          type: 'full'
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setAiNarrative(data.narrative);
+      } else {
+        throw new Error(data.error || 'Gagal menghasilkan interpretasi');
+      }
+    } catch (error) {
+      console.error('AI Interpretation error:', error);
+      setErrorMessage(error.message || 'Gagal menghasilkan interpretasi AI. Silakan coba lagi.');
+      setShowErrorModal(true);
+      setAiNarrative('');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   if (status === 'loading') {
@@ -305,6 +365,94 @@ export default function DnaPage() {
               </div>
             </div>
 
+            {/* AI Interpretation Section */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center shadow-lg">
+                    <HiSparkles className="text-2xl text-white" />
+                  </div>
+                  <h2 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Interpretasi AI</h2>
+                </div>
+                {!showAiSection && (
+                  <Button 
+                    onClick={generateAiInterpretation}
+                    className="flex items-center gap-2"
+                  >
+                    <FaRobot className="text-lg" />
+                    Generate Interpretasi
+                  </Button>
+                )}
+              </div>
+
+              {!showAiSection ? (
+                <div className={`p-6 rounded-3xl border-2 border-dashed text-center ${
+                  theme === 'dark' 
+                    ? 'border-cyan-700 bg-cyan-900/20' 
+                    : 'border-cyan-300 bg-cyan-50'
+                }`}>
+                  <HiSparkles className={`text-5xl mx-auto mb-4 ${theme === 'dark' ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                  <p className={`text-lg font-medium mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                    Dapatkan Interpretasi DNA yang Dipersonalisasi
+                  </p>
+                  <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    AI akan menganalisis profil DNA Anda dan memberikan narasi mendalam tentang potensi akademis Anda
+                  </p>
+                </div>
+              ) : aiLoading ? (
+                <div className={`p-8 rounded-3xl border-2 text-center ${
+                  theme === 'dark' 
+                    ? 'border-cyan-700 bg-cyan-900/20' 
+                    : 'border-cyan-300 bg-cyan-50'
+                }`}>
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="relative">
+                      <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                        <FaRobot className="text-3xl text-white" />
+                      </div>
+                      <div className="absolute inset-0 w-16 h-16 bg-cyan-400 rounded-full animate-ping opacity-30" />
+                    </div>
+                    <p className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+                      AI sedang menganalisis DNA Anda...
+                    </p>
+                    <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                      Mohon tunggu sebentar
+                    </p>
+                  </div>
+                </div>
+              ) : aiNarrative ? (
+                <div className={`p-6 rounded-3xl border-2 shadow-lg ${
+                  theme === 'dark' 
+                    ? 'border-cyan-700 bg-gradient-to-br from-cyan-900/30 to-blue-900/30' 
+                    : 'border-cyan-300 bg-gradient-to-br from-cyan-50 to-blue-50'
+                }`}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FaRobot className={`text-xl ${theme === 'dark' ? 'text-cyan-400' : 'text-cyan-600'}`} />
+                    <span className={`font-semibold ${theme === 'dark' ? 'text-cyan-300' : 'text-cyan-700'}`}>
+                      Analisis AI GenLearn
+                    </span>
+                  </div>
+                  <div className={`prose max-w-none ${theme === 'dark' ? 'prose-invert' : ''}`}>
+                    <p className={`leading-relaxed whitespace-pre-line ${
+                      theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                    }`}>
+                      {aiNarrative}
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-cyan-200/50 flex justify-end">
+                    <Button 
+                      onClick={generateAiInterpretation}
+                      variant="outline"
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      <HiSparkles className="text-sm" />
+                      Generate Ulang
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
             <Button onClick={() => router.push('/major-matching')} className="w-full flex items-center justify-center gap-2">
               <MdSchool className="text-xl" />
               Lanjut ke Matching Jurusan
@@ -432,9 +580,18 @@ export default function DnaPage() {
               />
             </div>
 
-            <Button onClick={handleNextStep} className="w-full">
-              ➡️ Lanjut ke Pertanyaan Psikologi
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => setShowCvParserModal(true)}
+                variant="outline"
+                className="flex-1 flex items-center justify-center gap-2"
+              >
+                <FaClipboard /> Parse dari CV
+              </Button>
+              <Button onClick={handleNextStep} className="flex-1">
+                ➡️ Lanjut ke Pertanyaan Psikologi
+              </Button>
+            </div>
           </Card>
         )}
 
@@ -527,6 +684,12 @@ export default function DnaPage() {
           title="Terjadi Kesalahan"
           message={errorMessage}
           buttonText="Tutup"
+        />
+
+        <CvParserModal
+          isOpen={showCvParserModal}
+          onClose={() => setShowCvParserModal(false)}
+          onDataExtracted={handleCvDataExtracted}
         />
       </main>
     </div>
