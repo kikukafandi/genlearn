@@ -34,7 +34,7 @@ function BubbleCluster() {
       </div>
       
       {/* Bubble Sedang - Psikologi */}
-      <div className="absolute left-[20%] top-[30%] w-28 h-28 md:w-32 md:h-32 bg-gradient-to-br from-[#06b6d4] to-[#3b82f6] rounded-full flex items-center justify-center shadow-xl z-10 animate-float">
+      <div className="absolute right-[70%] top-[30%] w-28 h-28 md:w-32 md:h-32 bg-gradient-to-br from-[#06b6d4] to-[#3b82f6] rounded-full flex items-center justify-center shadow-xl z-10 animate-float">
         <span className="text-white font-geist text-sm md:text-base">Psikologi</span>
       </div>
       
@@ -43,7 +43,7 @@ function BubbleCluster() {
         <span className="text-white font-geist text-xs">Komunikasi</span>
       </div>
       
-      <div className="absolute left-[25%] bottom-[20%] w-16 w-16 md:w-20 md:h-20 bg-gradient-to-br from-[#75B2AB] to-[#06b6d4] rounded-full flex items-center justify-center shadow-lg z-10 animate-float" style={{animationDelay: '1s'}}>
+      <div className="absolute left-[25%] bottom-[10%] w-16 w-16 md:w-20 md:h-20 bg-gradient-to-br from-[#75B2AB] to-[#06b6d4] rounded-full flex items-center justify-center shadow-lg z-10 animate-float" style={{animationDelay: '1s'}}>
         <span className="text-white font-geist text-xs">Analitis</span>
       </div>
       
@@ -103,8 +103,8 @@ export default function Home() {
 
         <section className="max-w-5xl mx-auto px-4 py-16 md:py-24">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            <div>
-              visual genome
+            <div className="w-full flex justify-start">
+              <BubbleCluster />
             </div>
             <div className="relative">
                <h1
