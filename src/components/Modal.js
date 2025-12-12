@@ -2,6 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import { IoClose } from 'react-icons/io5';
+import {
+  HiExclamationTriangle,
+  HiXCircle,
+  HiInformationCircle,
+  HiCheckCircle,
+  HiQuestionMarkCircle,
+} from 'react-icons/hi2';
 import Button from './Button';
 
 export default function Modal({
@@ -73,10 +80,10 @@ export default function Modal({
   // Type-based accent colors
   const typeAccents = {
     default: 'from-indigo-500 to-purple-600',
-    success: 'from-green-500 to-emerald-600',
+    success: 'from-teal-500 to-green-500',
     warning: 'from-yellow-500 to-orange-600',
     error: 'from-red-500 to-rose-600',
-    info: 'from-blue-500 to-cyan-600',
+    info: 'from-teal-500 to-cyan-600',
   };
 
   const typeGlows = {
@@ -192,7 +199,15 @@ export function ConfirmModal({
       onClose={onClose}
       title={title}
       type={type}
-      icon={type === 'warning' ? '⚠️' : type === 'error' ? '🚨' : '❓'}
+      icon={
+        type === 'warning' ? (
+          <HiExclamationTriangle className="text-white text-3xl" />
+        ) : type === 'error' ? (
+          <HiXCircle className="text-white text-3xl" />
+        ) : (
+          <HiQuestionMarkCircle className="text-white text-3xl" />
+        )
+      }
       actions={[
         { label: cancelText, onClick: onClose, variant: 'outline' },
         { label: confirmText, onClick: onConfirm, variant: 'primary' },
@@ -216,7 +231,7 @@ export function SuccessModal({
       onClose={onClose}
       title={title}
       type="success"
-      icon="✅"
+      icon={<HiCheckCircle className="text-white text-3xl" />}
       actions={[{ label: buttonText, onClick: onClose, variant: 'primary' }]}
     >
       <p>{message}</p>
@@ -237,7 +252,7 @@ export function ErrorModal({
       onClose={onClose}
       title={title}
       type="error"
-      icon="❌"
+      icon={<HiXCircle className="text-white text-3xl" />}
       actions={[{ label: buttonText, onClick: onClose, variant: 'primary' }]}
     >
       <p>{message}</p>
@@ -259,7 +274,7 @@ export function InfoModal({
       onClose={onClose}
       title={title}
       type="info"
-      icon="ℹ️"
+      icon={<HiInformationCircle className="text-white text-3xl" />}
       actions={[{ label: buttonText, onClick: onClose, variant: 'primary' }]}
     >
       {children || <p>{message}</p>}

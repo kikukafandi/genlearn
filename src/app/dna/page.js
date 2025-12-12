@@ -383,7 +383,7 @@ export default function DnaPage() {
                 <div className="p-8 rounded-3xl border-2 border-[#75B2AB] bg-[#E8F5F3] text-center">
                   <div className="flex flex-col items-center gap-4">
                     <div className="relative">
-                      <div className="w-16 h-16 bg-gradient-to-br from-[#75B2AB] to-[#8b5cf6] rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                      <div className="w-16 h-16 bg-gradient-to-br from-[#75B2AB] to-teal-500 rounded-full flex items-center justify-center shadow-xl animate-pulse">
                         <FaRobot className="text-3xl text-white" />
                       </div>
                       <div className="absolute inset-0 w-16 h-16 bg-[#75B2AB] rounded-full animate-ping opacity-30" />
@@ -455,7 +455,7 @@ export default function DnaPage() {
           <div className="flex items-center justify-between mb-3">
             <span className="text-base font-geist text-gray-700">Step {step} of 2</span>
             <span className="text-sm font-geist mono px-4 py-2 rounded-full shadow bg-white/80 text-gray-600 border border-[#75B2AB]/40">
-              {step === 1 ? '💪 DNA Skill' : '🧠 DNA Psikologi'}
+              {step === 1 ? 'DNA Skill' : 'DNA Psikologi'}
             </span>
           </div>
           <div className="w-full rounded-full h-3 overflow-hidden shadow-inner bg-white/50">
@@ -522,7 +522,7 @@ export default function DnaPage() {
 
             <div className="flex gap-3">
               <Button onClick={handleNextStep} className="flex-1 bg-[#f6806d] hover:bg-[#f46a54] rounded-full font-geist bold">
-                ➡️ Lanjut ke Pertanyaan Psikologi
+                Lanjut ke Pertanyaan Psikologi
               </Button>
             </div>
           </Card>
@@ -531,13 +531,13 @@ export default function DnaPage() {
         {step === 2 && (
           <Card className="bg-[#F6F4F0] border border-[#75B2AB] rounded-3xl shadow-xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-14 h-14 bg-gradient-to-br from-[#8b5cf6] to-[#a855f7] rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-14 h-14 bg-gradient-to-br from-[#75B2AB] to-teal-500 rounded-full flex items-center justify-center shadow-lg">
                 <GiBrain className="text-3xl text-white" />
               </div>
               <h2 className="text-3xl font-geist bold text-gray-900">DNA Psikologi</h2>
             </div>
             <p className="mb-6 leading-relaxed p-4 rounded-xl border bg-white border-[#75B2AB] text-gray-600 font-geist mono">
-              <span className="font-geist bold">📝 Petunjuk:</span> Jawab pertanyaan berikut dengan skala 1-5<br/>
+              <span className="font-geist bold"> Petunjuk:</span> Jawab pertanyaan berikut dengan skala 1-5<br/>
               <span className="text-sm">(1 = Sangat Tidak Setuju, 5 = Sangat Setuju)</span>
             </p>
 
@@ -554,7 +554,7 @@ export default function DnaPage() {
                           onClick={() => handlePsychologyAnswer(q.id, value)}
                           className={`w-14 h-14 rounded-full border-2 transition-all duration-300 font-geist bold text-lg shadow-lg ${
                             psychologyAnswers[q.id] === value
-                              ? 'bg-gradient-to-br from-[#75B2AB] to-[#8b5cf6] text-white border-[#75B2AB] scale-110 shadow-xl'
+                              ? 'bg-gradient-to-br from-[#75B2AB] to-teal-400 text-white border-[#75B2AB] scale-110 shadow-xl'
                               : 'bg-white text-gray-700 border-[#A7A7A7] hover:border-[#75B2AB] hover:scale-105'
                           }`}
                         >
@@ -570,14 +570,14 @@ export default function DnaPage() {
 
             <div className="flex gap-4 mt-8">
               <Button onClick={() => setStep(1)} variant="outline" className="flex-1 rounded-xl border-[#A7A7A7] font-geist bold">
-                ⬅️ Kembali
+                Kembali
               </Button>
               <Button 
                 onClick={handleSubmitClick} 
                 disabled={loading}
                 className="flex-1 bg-[#f6806d] hover:bg-[#f46a54] rounded-xl font-geist bold"
               >
-                {loading ? '⏳ Menyimpan...' : '✅ Simpan Assessment'}
+                {loading ? 'Menyimpan...' : 'Simpan Assessment'}
               </Button>
             </div>
           </Card>
