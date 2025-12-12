@@ -153,6 +153,23 @@ export default function DnaPage() {
     router.push('/major-matching');
   };
 
+  const renderAiNarrative = (text) => {
+    if (!text) return null;
+    return text.split('\n').map((line, lineIdx) => (
+      <p key={lineIdx} className="leading-relaxed text-gray-700 font-geist mono">
+        {line.split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((segment, segIdx) =>
+          segment.startsWith('**') && segment.endsWith('**') ? (
+            <span key={segIdx} className="font-geist bold text-teal-800">
+              {segment.slice(2, -2)}
+            </span>
+          ) : (
+            <span key={segIdx}>{segment}</span>
+          )
+        )}
+      </p>
+    ));
+  };
+
   // Generate AI Interpretation
   const generateAiInterpretation = async () => {
     if (!existingData?.dnaSkill || !existingData?.dnaPsychology) {
@@ -346,7 +363,7 @@ export default function DnaPage() {
                     onClick={generateAiInterpretation}
                     className="flex items-center gap-2 bg-[#f6806d] hover:bg-[#f46a54] rounded-full px-6"
                   >
-                    <FaRobot className="text-lg" />
+                    <FaRobot className="text-lg font-geist bold" />
                     Generate Interpretasi
                   </Button>
                 )}
@@ -374,7 +391,7 @@ export default function DnaPage() {
                     <p className="text-lg font-geist bold text-teal-800">
                       AI sedang menganalisis DNA Anda...
                     </p>
-                    <p className="text-sm text-gray-700">
+                    <p className="text-sm font-geist mono text-gray-700">
                       Mohon tunggu sebentar
                     </p>
                   </div>
@@ -387,10 +404,8 @@ export default function DnaPage() {
                       Analisis AI GenLearn
                     </span>
                   </div>
-                  <div className="prose max-w-none">
-                    <p className="leading-relaxed whitespace-pre-line text-gray-700 font-geist mono">
-                      {aiNarrative}
-                    </p>
+                  <div className="prose max-w-none space-y-2">
+                    {renderAiNarrative(aiNarrative)}
                   </div>
                   <div className="mt-4 pt-4 border-t border-[#75B2AB]/30 flex justify-end">
                     <Button 
