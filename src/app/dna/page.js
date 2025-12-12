@@ -10,11 +10,11 @@ import Input from '@/components/Input';
 import DnaHelix from '@/components/DnaHelix';
 import DnaNetwork from '@/components/DnaNetwork';
 import Modal, { ConfirmModal, SuccessModal, ErrorModal } from '@/components/Modal';
-import { useTheme } from '@/contexts/ThemeContext';
-import { FaDna, FaNetworkWired, FaFire, FaStar, FaChartLine } from 'react-icons/fa';
+import { FaDna, FaNetworkWired, FaFire, FaStar, FaChartLine, FaRobot } from 'react-icons/fa';
 import { GiBrain, GiBookshelf } from 'react-icons/gi';
 import { MdPsychology, MdEmojiPeople, MdSchool } from 'react-icons/md';
 import { BiTargetLock } from 'react-icons/bi';
+import { HiSparkles } from 'react-icons/hi2';
 
 const psychologyQuestions = [
   { id: 1, question: 'Saya lebih suka bekerja dengan data dan angka', category: 'cognitive' },
@@ -32,7 +32,6 @@ const psychologyQuestions = [
 export default function DnaPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const { theme } = useTheme();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [existingData, setExistingData] = useState(null);
@@ -43,6 +42,11 @@ export default function DnaPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // AI Interpretation states
+  const [aiNarrative, setAiNarrative] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [showAiSection, setShowAiSection] = useState(false);
 
   // Step 1: Skill data
   const [skillData, setSkillData] = useState({
@@ -149,20 +153,74 @@ export default function DnaPage() {
     router.push('/major-matching');
   };
 
+  const renderAiNarrative = (text) => {
+    if (!text) return null;
+    return text.split('\n').map((line, lineIdx) => (
+      <p key={lineIdx} className="leading-relaxed text-gray-700 font-geist mono">
+        {line.split(/(\*\*[^*]+\*\*)/g).filter(Boolean).map((segment, segIdx) =>
+          segment.startsWith('**') && segment.endsWith('**') ? (
+            <span key={segIdx} className="font-geist bold text-teal-800">
+              {segment.slice(2, -2)}
+            </span>
+          ) : (
+            <span key={segIdx}>{segment}</span>
+          )
+        )}
+      </p>
+    ));
+  };
+
+  // Generate AI Interpretation
+  const generateAiInterpretation = async () => {
+    if (!existingData?.dnaSkill || !existingData?.dnaPsychology) {
+      setErrorMessage('Data DNA tidak lengkap untuk menghasilkan interpretasi.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    setAiLoading(true);
+    setShowAiSection(true);
+
+    try {
+      const res = await fetch('/api/ai/dna-interpretation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          dnaSkill: existingData.dnaSkill,
+          dnaPsycho: existingData.dnaPsychology,
+          type: 'full'
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setAiNarrative(data.narrative);
+      } else {
+        throw new Error(data.error || 'Gagal menghasilkan interpretasi');
+      }
+    } catch (error) {
+      console.error('AI Interpretation error:', error);
+      setErrorMessage(error.message || 'Gagal menghasilkan interpretasi AI. Silakan coba lagi.');
+      setShowErrorModal(true);
+      setAiNarrative('');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   if (status === 'loading') {
     return (
-      <div className={`min-h-screen transition-colors duration-500 ${
-        theme === 'dark' 
-          ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' 
-          : 'bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100'
-      }`}>
+      <div className="min-h-screen bg-register-gradient">
         <Navbar />
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-xl mx-auto mb-4 animate-pulse-glow">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#75B2AB] to-teal-400 rounded-full flex items-center justify-center shadow-xl mx-auto mb-4 animate-pulse-glow">
               <FaDna className="text-3xl text-white" />
             </div>
-            <p className={`font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Loading...</p>
+            <p className="font-geist mono text-gray-600">Loading...</p>
           </div>
         </div>
       </div>
@@ -172,33 +230,29 @@ export default function DnaPage() {
   // Show results if data already exists
   if (existingData && existingData.dnaSkill && existingData.dnaPsychology) {
     return (
-      <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${
-        theme === 'dark' 
-          ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' 
-          : 'bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100'
-      }`}>
-        {/* Bubble Background */}
-        <div className={`absolute top-20 right-10 w-64 h-64 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float ${
-          theme === 'dark' ? 'bg-blue-600' : 'bg-blue-300'
-        }`}></div>
-        <div className={`absolute bottom-20 left-10 w-72 h-72 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float ${
-          theme === 'dark' ? 'bg-purple-600' : 'bg-purple-300'
-        }`} style={{animationDelay: '1.5s'}}></div>
-        
+      <div className="min-h-screen bg-register-gradient">
         <Navbar />
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* View Toggle */}
           <div className="flex justify-center gap-4 mb-8">
             <Button 
               onClick={() => setViewMode('helix')}
-              className={`flex items-center gap-2 ${viewMode === 'helix' ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-gray-400'}`}
+              className={`flex items-center gap-2 rounded-full px-6 py-3 border transition-all duration-300 ${
+                viewMode === 'helix'
+                  ? 'bg-teal-800 text-white border-transparent shadow-xl'
+                  : 'bg-teal-500 text-white/90 border-white/30 hover:bg-teal-800'
+              }`}
             >
               <FaDna className="text-lg" />
               DNA Helix
             </Button>
             <Button 
               onClick={() => setViewMode('network')}
-              className={`flex items-center gap-2 ${viewMode === 'network' ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-gray-400'}`}
+              className={`flex items-center gap-2 rounded-full px-6 py-3 border transition-all duration-300 ${
+                viewMode === 'network'
+                  ? 'bg-teal-800 text-white border-transparent shadow-xl'
+                  : 'bg-teal-500 text-white/90 border-white/30 hover:bg-teal-800'
+              }`}
             >
               <FaNetworkWired className="text-lg" />
               Network View
@@ -213,7 +267,6 @@ export default function DnaPage() {
                 psychologyData={existingData.dnaPsychology}
                 width={1000}
                 height={700}
-                theme={theme}
               />
             ) : (
               <DnaNetwork 
@@ -221,91 +274,154 @@ export default function DnaPage() {
                 psychologyData={existingData.dnaPsychology}
                 width={1000}
                 height={700}
-                theme={theme}
               />
             )}
           </div>
 
-          <Card>
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-xl">
-                <FaDna className="text-3xl text-white" />
-              </div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Detail DNA Assessment</h1>
+          <Card className="bg-[#F6F4F0] border-2 border-[#75B2AB] rounded-3xl shadow-xl">
+            <div className="flex items-center gap-4 mb-12">
+                <FaDna className="text-3xl text-[#f6806d]" />
+              <h1 className="text-4xl font-geist bold text-teal-800">Detail DNA Assessment</h1>
             </div>
             
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
-                  <FaFire className="text-2xl text-white" />
-                </div>
-                <h2 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>DNA Skill</h2>
+                <FaFire className="text-3xl text-[#f6806d]" />
+                <h2 className="text-3xl font-geist bold text-teal-800">DNA Skill</h2>
               </div>
               <div className="grid md:grid-cols-3 gap-5">
-                <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl border-2 border-green-300 shadow-lg hover:shadow-xl transition-all">
+                <div className="p-6 bg-white rounded-xl border border-[#75B2AB] shadow-lg hover:shadow-xl transition-all">
                   <div className="flex items-center gap-2 mb-3">
-                    <FaStar className="text-2xl text-green-600" />
-                    <h3 className="font-bold text-green-800 text-lg">Skill Kuat</h3>
+                    <FaStar className="text-2xl text-[#75B2AB]" />
+                    <h3 className="font-geist bold text-gray-900 text-lg">Skill Kuat</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{existingData.dnaSkill.skillStrong}</p>
+                  <p className="font-geist mono text-gray-700 leading-relaxed">{existingData.dnaSkill.skillStrong}</p>
                 </div>
-                <div className="p-6 bg-gradient-to-br from-yellow-50 to-amber-50 rounded-3xl border-2 border-yellow-300 shadow-lg hover:shadow-xl transition-all">
+                <div className="p-6 bg-white rounded-xl border border-[#f6806d] shadow-lg hover:shadow-xl transition-all">
                   <div className="flex items-center gap-2 mb-3">
-                    <BiTargetLock className="text-2xl text-yellow-700" />
-                    <h3 className="font-bold text-yellow-800 text-lg">Skill Sedang</h3>
+                    <BiTargetLock className="text-2xl text-[#f6806d]" />
+                    <h3 className="font-geist bold text-gray-900 text-lg">Skill Sedang</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{existingData.dnaSkill.skillMedium}</p>
+                  <p className="font-geist mono text-gray-700 leading-relaxed">{existingData.dnaSkill.skillMedium}</p>
                 </div>
-                <div className="p-6 bg-gradient-to-br from-orange-50 to-red-50 rounded-3xl border-2 border-orange-300 shadow-lg hover:shadow-xl transition-all">
+                <div className="p-6 bg-white rounded-xl border border-[#75B2AB] shadow-lg hover:shadow-xl transition-all">
                   <div className="flex items-center gap-2 mb-3">
-                    <FaChartLine className="text-2xl text-orange-600" />
-                    <h3 className="font-bold text-orange-800 text-lg">Perlu Ditingkatkan</h3>
+                    <FaChartLine className="text-2xl text-[#75B2AB]" />
+                    <h3 className="font-geist bold text-gray-900 text-lg">Perlu Ditingkatkan</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{existingData.dnaSkill.skillWeak}</p>
+                  <p className="font-geist mono text-gray-700 leading-relaxed">{existingData.dnaSkill.skillWeak}</p>
                 </div>
               </div>
             </div>
 
             <div className="mb-8">
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
-                  <GiBrain className="text-2xl text-white" />
-                </div>
-                <h2 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>DNA Psikologi</h2>
+                <GiBrain className="text-4xl text-[#f6806d]" />
+                <h2 className="text-3xl font-geist bold text-teal-800">DNA Psikologi</h2>
               </div>
               <div className="grid md:grid-cols-2 gap-5">
-                <div className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl border-2 border-blue-300 shadow-lg hover:shadow-xl transition-all">
+                <div className="p-6 bg-white rounded-xl border border-[#06b6d4] shadow-lg hover:shadow-xl transition-all">
                   <div className="flex items-center gap-2 mb-3">
-                    <MdPsychology className="text-2xl text-blue-600" />
-                    <h3 className="font-bold text-blue-800 text-lg">Kognitif</h3>
+                    <MdPsychology className="text-2xl text-[#06b6d4]" />
+                    <h3 className="font-geist bold text-gray-900 text-lg">Kognitif</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{existingData.dnaPsychology.cognitive}</p>
+                  <p className="font-geist mono text-gray-700 leading-relaxed">{existingData.dnaPsychology.cognitive}</p>
                 </div>
-                <div className="p-6 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-3xl border-2 border-purple-300 shadow-lg hover:shadow-xl transition-all">
+                <div className="p-6 bg-white rounded-xl border border-[#f6806d] shadow-lg hover:shadow-xl transition-all">
                   <div className="flex items-center gap-2 mb-3">
-                    <GiBookshelf className="text-2xl text-purple-600" />
-                    <h3 className="font-bold text-purple-800 text-lg">Gaya Belajar</h3>
+                    <GiBookshelf className="text-2xl text-[#f6806d]" />
+                    <h3 className="font-geist bold text-gray-900 text-lg">Gaya Belajar</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{existingData.dnaPsychology.learning}</p>
+                  <p className="font-geist mono text-gray-700 leading-relaxed">{existingData.dnaPsychology.learning}</p>
                 </div>
-                <div className="p-6 bg-gradient-to-br from-pink-50 to-rose-50 rounded-3xl border-2 border-pink-300 shadow-lg hover:shadow-xl transition-all">
+                <div className="p-6 bg-white rounded-xl border border-[#f6806d] shadow-lg hover:shadow-xl transition-all">
                   <div className="flex items-center gap-2 mb-3">
-                    <FaFire className="text-2xl text-pink-600" />
-                    <h3 className="font-bold text-pink-800 text-lg">Motivasi</h3>
+                    <FaFire className="text-2xl text-[#f6806d]" />
+                    <h3 className="font-geist bold text-gray-900 text-lg">Motivasi</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{existingData.dnaPsychology.motivation}</p>
+                  <p className="font-geist mono text-gray-700 leading-relaxed">{existingData.dnaPsychology.motivation}</p>
                 </div>
-                <div className="p-6 bg-gradient-to-br from-indigo-50 to-violet-50 rounded-3xl border-2 border-indigo-300 shadow-lg hover:shadow-xl transition-all">
+                <div className="p-6 bg-white rounded-xl border border-[#75B2AB] shadow-lg hover:shadow-xl transition-all">
                   <div className="flex items-center gap-2 mb-3">
-                    <MdEmojiPeople className="text-2xl text-indigo-600" />
-                    <h3 className="font-bold text-indigo-800 text-lg">Kepribadian</h3>
+                    <MdEmojiPeople className="text-2xl text-[#75B2AB]" />
+                    <h3 className="font-geist bold text-gray-900 text-lg">Kepribadian</h3>
                   </div>
-                  <p className="text-gray-700 leading-relaxed">{existingData.dnaPsychology.trait}</p>
+                  <p className="font-geist mono text-gray-700 leading-relaxed">{existingData.dnaPsychology.trait}</p>
                 </div>
               </div>
             </div>
 
-            <Button onClick={() => router.push('/major-matching')} className="w-full flex items-center justify-center gap-2">
+            {/* AI Interpretation Section */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <HiSparkles className="text-3xl text-[#f6806d]" />
+                  <h2 className="text-3xl font-geist bold text-teal-800">Interpretasi AI</h2>
+                </div>
+                {!showAiSection && (
+                  <Button 
+                    onClick={generateAiInterpretation}
+                    className="flex items-center gap-2 bg-[#f6806d] hover:bg-[#f46a54] rounded-full px-6"
+                  >
+                    <FaRobot className="text-lg font-geist bold" />
+                    Generate Interpretasi
+                  </Button>
+                )}
+              </div>
+
+              {!showAiSection ? (
+                <div className="p-6 rounded-3xl border-2 border-dashed border-[#75B2AB] bg-[#E8F5F3] text-center">
+                  <HiSparkles className="text-5xl text-[#75B2AB] mx-auto mb-4" />
+                  <p className="text-lg font-geist bold text-teal-800 mb-2">
+                    Dapatkan Interpretasi DNA yang Dipersonalisasi
+                  </p>
+                  <p className="text-sm font-geist mono text-gray-700">
+                    AI akan menganalisis profil DNA Anda dan memberikan narasi mendalam tentang potensi akademis Anda
+                  </p>
+                </div>
+              ) : aiLoading ? (
+                <div className="p-8 rounded-3xl border-2 border-[#75B2AB] bg-[#E8F5F3] text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="relative">
+                      <div className="w-16 h-16 bg-gradient-to-br from-[#75B2AB] to-[#8b5cf6] rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                        <FaRobot className="text-3xl text-white" />
+                      </div>
+                      <div className="absolute inset-0 w-16 h-16 bg-[#75B2AB] rounded-full animate-ping opacity-30" />
+                    </div>
+                    <p className="text-lg font-geist bold text-teal-800">
+                      AI sedang menganalisis DNA Anda...
+                    </p>
+                    <p className="text-sm font-geist mono text-gray-700">
+                      Mohon tunggu sebentar
+                    </p>
+                  </div>
+                </div>
+              ) : aiNarrative ? (
+                <div className="p-6 rounded-3xl border-2 border-[#75B2AB] bg-gradient-to-br from-[#F6F4F0] via-[#e8f5f3] to-[#f0e8f7] shadow-lg">
+                  <div className="flex items-center gap-2 mb-4 text-teal-800">
+                    <FaRobot className="text-xl" />
+                    <span className="font-geist bold">
+                      Analisis AI GenLearn
+                    </span>
+                  </div>
+                  <div className="prose max-w-none space-y-2">
+                    {renderAiNarrative(aiNarrative)}
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-[#75B2AB]/30 flex justify-end">
+                    <Button 
+                      onClick={generateAiInterpretation}
+                      variant="outline"
+                      className="flex items-center gap-2 text-sm rounded-full border-[#75B2AB] text-teal-800"
+                    >
+                      <HiSparkles className="text-sm" />
+                      Generate Ulang
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <Button onClick={() => router.push('/major-matching')} className="w-full flex items-center justify-center gap-2 bg-[#f6806d] hover:bg-[#f46a54] rounded-full font-geist bold mt-6">
               <MdSchool className="text-xl" />
               Lanjut ke Matching Jurusan
             </Button>
@@ -316,30 +432,18 @@ export default function DnaPage() {
   }
 
   return (
-    <div className={`min-h-screen relative overflow-hidden transition-colors duration-500 ${
-      theme === 'dark' 
-        ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900' 
-        : 'bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100'
-    }`}>
-      {/* Bubble Background */}
-      <div className={`absolute top-20 left-10 w-64 h-64 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float ${
-        theme === 'dark' ? 'bg-blue-600' : 'bg-blue-300'
-      }`}></div>
-      <div className={`absolute bottom-20 right-10 w-72 h-72 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float ${
-        theme === 'dark' ? 'bg-purple-600' : 'bg-purple-300'
-      }`} style={{animationDelay: '1.5s'}}></div>
-      
+    <div className="min-h-screen bg-register-gradient">
       <Navbar />
       
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="mb-6">
           <div className="flex items-center gap-4 mb-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-xl">
+            <div className="w-16 h-16 bg-gradient-to-br from-[#75B2AB] to-teal-400 rounded-full flex items-center justify-center shadow-xl">
               <FaDna className="text-3xl text-white" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">DNA Assessment</h1>
-              <p className={`mt-1 text-lg ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+              <h1 className="text-4xl font-geist bold text-teal-800">DNA Assessment</h1>
+              <p className="mt-1 text-lg font-geist mono text-gray-600">
                 Lengkapi profil DNA skill dan psikologi Anda
               </p>
             </div>
@@ -349,151 +453,129 @@ export default function DnaPage() {
         {/* Progress indicator */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
-            <span className={`text-base font-semibold ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Step {step} of 2</span>
-            <span className={`text-sm font-medium px-4 py-2 rounded-full shadow ${
-              theme === 'dark' ? 'bg-zinc-800 text-gray-200' : 'bg-white text-gray-500'
-            }`}>
+            <span className="text-base font-geist text-gray-700">Step {step} of 2</span>
+            <span className="text-sm font-geist mono px-4 py-2 rounded-full shadow bg-white/80 text-gray-600 border border-[#75B2AB]/40">
               {step === 1 ? '💪 DNA Skill' : '🧠 DNA Psikologi'}
             </span>
           </div>
-          <div className={`w-full rounded-full h-3 overflow-hidden shadow-inner ${
-            theme === 'dark' ? 'bg-zinc-700' : 'bg-gray-200'
-          }`}>
+          <div className="w-full rounded-full h-3 overflow-hidden shadow-inner bg-white/50">
             <div
-              className="bg-gradient-to-r from-blue-500 to-purple-600 h-3 rounded-full transition-all duration-500 shadow-lg"
+              className="bg-gradient-to-r from-[#75B2AB] to-[#f6806d] h-3 rounded-full transition-all duration-500 shadow-lg"
               style={{ width: `${(step / 2) * 100}%` }}
             />
           </div>
         </div>
 
         {step === 1 && (
-          <Card>
+          <Card className="bg-[#F6F4F0] border border-[#75B2AB] rounded-3xl shadow-xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-600 rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-14 h-14 bg-gradient-to-br from-[#75B2AB] to-[#06b6d4] rounded-full flex items-center justify-center shadow-lg">
                 <FaFire className="text-3xl text-white" />
               </div>
-              <h2 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>DNA Skill</h2>
+              <h2 className="text-3xl font-geist bold text-gray-900">DNA Skill</h2>
             </div>
             
             <div className="mb-5">
-              <label className={`block text-base font-bold mb-3 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
-                Skill yang Anda Miliki <span className="text-red-500">*</span>
+              <label className="block text-base font-geist bold mb-3 text-gray-800">
+                Skill yang Anda Miliki <span className="text-[#f6806d]">*</span>
               </label>
               <textarea
                 name="rawSkills"
                 value={skillData.rawSkills}
                 onChange={handleSkillChange}
                 placeholder="Contoh: programming, desain grafis, public speaking, analisis data"
-                className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all shadow-sm ${
-                  theme === 'dark' 
-                    ? 'bg-zinc-800 border-zinc-600 text-white placeholder-gray-400 hover:border-zinc-500' 
-                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 hover:border-gray-300'
-                }`}
+                className="w-full px-5 py-4 border rounded-xl focus:ring-4 focus:ring-[#75B2AB]/20 focus:border-[#75B2AB] outline-none transition-all shadow-sm bg-white border-[#75B2AB]/40 text-gray-900 placeholder-gray-400 hover:border-[#75B2AB] font-geist mono"
                 rows="3"
                 required
               />
             </div>
 
             <div className="mb-5">
-              <label className={`block text-base font-bold mb-3 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
-                Pengalaman Anda <span className="text-red-500">*</span>
+              <label className="block text-base font-geist bold mb-3 text-gray-800">
+                Pengalaman Anda <span className="text-[#f6806d]">*</span>
               </label>
               <textarea
                 name="experiences"
                 value={skillData.experiences}
                 onChange={handleSkillChange}
                 placeholder="Contoh: organisasi, magang, proyek, kompetisi"
-                className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all shadow-sm ${
-                  theme === 'dark' 
-                    ? 'bg-zinc-800 border-zinc-600 text-white placeholder-gray-400 hover:border-zinc-500' 
-                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 hover:border-gray-300'
-                }`}
+                className="w-full px-5 py-4 border rounded-xl focus:ring-4 focus:ring-[#75B2AB]/20 focus:border-[#75B2AB] outline-none transition-all shadow-sm bg-white border-[#75B2AB]/40 text-gray-900 placeholder-gray-400 hover:border-[#75B2AB] font-geist mono"
                 rows="3"
                 required
               />
             </div>
 
             <div className="mb-6">
-              <label className={`block text-base font-bold mb-3 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-800'}`}>
-                Minat Awal Anda <span className="text-red-500">*</span>
+              <label className="block text-base font-geist bold mb-3 text-gray-800">
+                Minat Awal Anda <span className="text-[#f6806d]">*</span>
               </label>
               <textarea
                 name="interest"
                 value={skillData.interest}
                 onChange={handleSkillChange}
                 placeholder="Contoh: teknologi, seni, bisnis, kesehatan"
-                className={`w-full px-5 py-4 border-2 rounded-2xl focus:ring-4 focus:ring-blue-200 focus:border-blue-500 outline-none transition-all shadow-sm ${
-                  theme === 'dark' 
-                    ? 'bg-zinc-800 border-zinc-600 text-white placeholder-gray-400 hover:border-zinc-500' 
-                    : 'bg-white border-gray-200 text-gray-900 placeholder-gray-400 hover:border-gray-300'
-                }`}
+                className="w-full px-5 py-4 border rounded-xl focus:ring-4 focus:ring-[#75B2AB]/20 focus:border-[#75B2AB] outline-none transition-all shadow-sm bg-white border-[#75B2AB]/40 text-gray-900 placeholder-gray-400 hover:border-[#75B2AB] font-geist mono"
                 rows="3"
                 required
               />
             </div>
 
-            <Button onClick={handleNextStep} className="w-full">
-              ➡️ Lanjut ke Pertanyaan Psikologi
-            </Button>
+            <div className="flex gap-3">
+              <Button onClick={handleNextStep} className="flex-1 bg-[#f6806d] hover:bg-[#f46a54] rounded-full font-geist bold">
+                ➡️ Lanjut ke Pertanyaan Psikologi
+              </Button>
+            </div>
           </Card>
         )}
 
         {step === 2 && (
-          <Card>
+          <Card className="bg-[#F6F4F0] border border-[#75B2AB] rounded-3xl shadow-xl">
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full flex items-center justify-center shadow-lg">
+              <div className="w-14 h-14 bg-gradient-to-br from-[#8b5cf6] to-[#a855f7] rounded-full flex items-center justify-center shadow-lg">
                 <GiBrain className="text-3xl text-white" />
               </div>
-              <h2 className={`text-3xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>DNA Psikologi</h2>
+              <h2 className="text-3xl font-geist bold text-gray-900">DNA Psikologi</h2>
             </div>
-            <p className={`mb-6 leading-relaxed p-4 rounded-2xl border-2 ${
-              theme === 'dark' 
-                ? 'bg-blue-900/30 border-blue-700 text-gray-200' 
-                : 'bg-blue-50 border-blue-200 text-gray-600'
-            }`}>
-              <span className="font-semibold">📝 Petunjuk:</span> Jawab pertanyaan berikut dengan skala 1-5<br/>
+            <p className="mb-6 leading-relaxed p-4 rounded-xl border bg-white border-[#75B2AB] text-gray-600 font-geist mono">
+              <span className="font-geist bold">📝 Petunjuk:</span> Jawab pertanyaan berikut dengan skala 1-5<br/>
               <span className="text-sm">(1 = Sangat Tidak Setuju, 5 = Sangat Setuju)</span>
             </p>
 
             <div className="space-y-6">
               {psychologyQuestions.map((q) => (
-                <div key={q.id} className={`pb-6 border-b-2 last:border-0 ${
-                  theme === 'dark' ? 'border-zinc-700' : 'border-gray-100'
-                }`}>
-                  <p className={`font-bold mb-5 text-lg ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{q.id}. {q.question}</p>
+                <div key={q.id} className="pb-6 border-b last:border-0 border-[#A7A7A7]">
+                  <p className="font-geist bold mb-5 text-lg text-gray-900">{q.id}. {q.question}</p>
                   <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                    <span className={`text-xs font-medium hidden sm:block ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Sangat Tidak Setuju</span>
+                    <span className="text-xs font-geist mono hidden sm:block text-gray-500">Sangat Tidak Setuju</span>
                     <div className="flex gap-3">
                       {[1, 2, 3, 4, 5].map((value) => (
                         <button
                           key={value}
                           onClick={() => handlePsychologyAnswer(q.id, value)}
-                          className={`w-14 h-14 rounded-full border-3 transition-all duration-300 font-bold text-lg shadow-lg ${
+                          className={`w-14 h-14 rounded-full border-2 transition-all duration-300 font-geist bold text-lg shadow-lg ${
                             psychologyAnswers[q.id] === value
-                              ? 'bg-gradient-to-br from-blue-500 to-purple-600 text-white border-blue-600 scale-110 shadow-xl'
-                              : theme === 'dark'
-                                ? 'bg-zinc-700 text-gray-200 border-zinc-600 hover:border-blue-400 hover:scale-105'
-                                : 'bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:scale-105'
+                              ? 'bg-gradient-to-br from-[#75B2AB] to-[#8b5cf6] text-white border-[#75B2AB] scale-110 shadow-xl'
+                              : 'bg-white text-gray-700 border-[#A7A7A7] hover:border-[#75B2AB] hover:scale-105'
                           }`}
                         >
                           {value}
                         </button>
                       ))}
                     </div>
-                    <span className={`text-xs font-medium hidden sm:block ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Sangat Setuju</span>
+                    <span className="text-xs font-geist mono hidden sm:block text-gray-500">Sangat Setuju</span>
                   </div>
                 </div>
               ))}
             </div>
 
             <div className="flex gap-4 mt-8">
-              <Button onClick={() => setStep(1)} variant="outline" className="flex-1">
+              <Button onClick={() => setStep(1)} variant="outline" className="flex-1 rounded-xl border-[#A7A7A7] font-geist bold">
                 ⬅️ Kembali
               </Button>
               <Button 
                 onClick={handleSubmitClick} 
                 disabled={loading}
-                className="flex-1"
+                className="flex-1 bg-[#f6806d] hover:bg-[#f46a54] rounded-xl font-geist bold"
               >
                 {loading ? '⏳ Menyimpan...' : '✅ Simpan Assessment'}
               </Button>
@@ -528,6 +610,7 @@ export default function DnaPage() {
           message={errorMessage}
           buttonText="Tutup"
         />
+
       </main>
     </div>
   );

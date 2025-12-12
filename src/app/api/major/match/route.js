@@ -148,7 +148,11 @@ export async function GET() {
     // Sort by score descending
     matches.sort((a, b) => b.score - a.score);
 
-    return NextResponse.json({ matches });
+    return NextResponse.json({ 
+      matches,
+      dnaSkill: user.dnaSkill,
+      dnaPsycho: user.dnaPsychology
+    });
   } catch (error) {
     console.error('Major matching error:', error);
     return NextResponse.json(

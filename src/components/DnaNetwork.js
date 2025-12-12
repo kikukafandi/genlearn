@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-export default function DnaNetwork({ skillData, psychologyData, width = 800, height = 600, theme = 'light' }) {
+export default function DnaNetwork({ skillData, psychologyData, width = 800, height = 600 }) {
   const svgRef = useRef(null);
 
   useEffect(() => {
@@ -240,7 +240,7 @@ export default function DnaNetwork({ skillData, psychologyData, width = 800, hei
         nodeGroup.append('text')
           .attr('text-anchor', 'middle')
           .attr('dy', startY + (i * lineHeight))
-          .attr('fill', 'white')
+          .attr('fill', 'black')
           .attr('font-size', '12px')
           .attr('font-weight', 'bold')
           .attr('pointer-events', 'none')
@@ -284,7 +284,7 @@ export default function DnaNetwork({ skillData, psychologyData, width = 800, hei
       .attr('text-anchor', 'middle')
       .attr('font-size', '24px')
       .attr('font-weight', 'bold')
-      .attr('fill', theme === 'dark' ? '#60a5fa' : '#3b82f6')
+      .attr('fill', '#f6806d')
       .text('DNA Skill & Psikologi Network')
       .attr('opacity', 0)
       .transition()
@@ -295,68 +295,68 @@ export default function DnaNetwork({ skillData, psychologyData, width = 800, hei
       simulation.stop();
     };
 
-  }, [skillData, psychologyData, width, height, theme]);
+  }, [skillData, psychologyData, width, height]);
 
   return (
     <div className="w-full flex flex-col gap-6">
       {/* Legend */}
-      <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 rounded-3xl p-6 shadow-xl">
-        <h3 className="text-xl font-bold text-white mb-4 text-center">Keterangan Warna</h3>
+      <div className="bg-[#F6F4F0] border-2 border-[#75B2AB] rounded-3xl p-6 shadow-xl">
+        <h3 className="text-xl font-geist bold text-[#0B6B64] mb-4 text-center">Keterangan Warna</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-4 border-green-500" style={{filter: 'drop-shadow(0 0 8px #10b981)'}}></div>
+            <div className="w-8 h-8 rounded-full border-4 border-[#0B6B64]"></div>
             <div>
-              <p className="text-white font-bold text-sm">Skill Kuat</p>
-              <p className="text-gray-400 text-xs">Keahlian utama</p>
+              <p className="font-geist bold text-sm text-gray-900">Skill Kuat</p>
+              <p className="font-geist mono text-xs text-gray-600">Keahlian utama</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-4 border-yellow-500" style={{filter: 'drop-shadow(0 0 8px #f59e0b)'}}></div>
+            <div className="w-8 h-8 rounded-full border-4 border-[#f6806d]"></div>
             <div>
-              <p className="text-white font-bold text-sm">Skill Sedang</p>
-              <p className="text-gray-400 text-xs">Perlu pengembangan</p>
+              <p className="font-geist bold text-sm text-gray-900">Skill Sedang</p>
+              <p className="font-geist mono text-xs text-gray-600">Perlu pengembangan</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-4 border-red-500" style={{filter: 'drop-shadow(0 0 8px #ef4444)'}}></div>
+            <div className="w-8 h-8 rounded-full border-4 border-[#8b5cf6]"></div>
             <div>
-              <p className="text-white font-bold text-sm">Skill Lemah</p>
-              <p className="text-gray-400 text-xs">Butuh peningkatan</p>
+              <p className="font-geist bold text-sm text-gray-900">Skill Lemah</p>
+              <p className="font-geist mono text-xs text-gray-600">Butuh peningkatan</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-4 border-blue-500" style={{filter: 'drop-shadow(0 0 8px #3b82f6)'}}></div>
+            <div className="w-8 h-8 rounded-full border-4 border-[#75B2AB]"></div>
             <div>
-              <p className="text-white font-bold text-sm">Kognitif</p>
-              <p className="text-gray-400 text-xs">Cara berpikir</p>
+              <p className="font-geist bold text-sm text-gray-900">Kognitif</p>
+              <p className="font-geist mono text-xs text-gray-600">Cara berpikir</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-4 border-purple-500" style={{filter: 'drop-shadow(0 0 8px #8b5cf6)'}}></div>
+            <div className="w-8 h-8 rounded-full border-4 border-[#8b5cf6]"></div>
             <div>
-              <p className="text-white font-bold text-sm">Gaya Belajar</p>
-              <p className="text-gray-400 text-xs">Metode belajar</p>
+              <p className="font-geist bold text-sm text-gray-900">Gaya Belajar</p>
+              <p className="font-geist mono text-xs text-gray-600">Metode belajar</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-4 border-pink-500" style={{filter: 'drop-shadow(0 0 8px #ec4899)'}}></div>
+            <div className="w-8 h-8 rounded-full border-4 border-[#f6806d]"></div>
             <div>
-              <p className="text-white font-bold text-sm">Motivasi</p>
-              <p className="text-gray-400 text-xs">Pendorong diri</p>
+              <p className="font-geist bold text-sm text-gray-900">Motivasi</p>
+              <p className="font-geist mono text-xs text-gray-600">Pendorong diri</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-4 border-indigo-500" style={{filter: 'drop-shadow(0 0 8px #6366f1)'}}></div>
+            <div className="w-8 h-8 rounded-full border-4 border-[#0B6B64]"></div>
             <div>
-              <p className="text-white font-bold text-sm">Kepribadian</p>
-              <p className="text-gray-400 text-xs">Karakter diri</p>
+              <p className="font-geist bold text-sm text-gray-900">Kepribadian</p>
+              <p className="font-geist mono text-xs text-gray-600">Karakter diri</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Network Visualization */}
-      <div className="bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900 rounded-3xl p-8 shadow-xl">
+      <div className="bg-[#F6F4F0] border-2 border-[#75B2AB] rounded-3xl p-8 shadow-xl flex items-center justify-center">
         <svg ref={svgRef} className="w-full h-auto max-w-4xl"></svg>
       </div>
     </div>

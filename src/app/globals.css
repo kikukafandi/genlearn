@@ -5,12 +5,13 @@
   --foreground: #171717;
   
   /* GenLearn Academic Bubble Theme */
-  --primary-blue: #3b82f6;
+  --primary-teal: #75B2AB;
   --primary-purple: #8b5cf6;
   --accent-cyan: #06b6d4;
   --accent-indigo: #6366f1;
   --neutral-light: #f8fafc;
   --neutral-gray: #94a3b8;
+  --primary-red: #f6806d;
   
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -99,4 +100,82 @@ body {
 /* Smooth Transitions */
 * {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@font-face {
+  font-family: 'Geist Bold';
+  src: url('/font/Geist-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist';
+  src: url('/font/Geist-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/font/GeistMono-light.woff2') format('woff2');
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-geist.bold{
+  font-family: 'Geist Bold', 'Geist', var(--font-montserrat),
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+} 
+
+.font-geist {
+  font-family: 'Geist', var(--font-montserrat),
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 600;
+}
+
+.font-geist.mono {
+  font-family: 'Geist Mono', 'Geist', var(--font-montserrat),
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: 0.04em;
+}
+
+.bg-register-gradient {
+  background-color: #f6f0e6;
+}
+
+.hero-layer-blur {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Layer warna gradient di atas putih */
+.hero-layer-blur::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(90deg,
+      rgba(97, 74, 252, 0.10) 0%,
+      rgba(0, 143, 137, 0.10) 17%,
+      rgba(244, 80, 0, 0.10) 83%
+    );
+  z-index: 0;
+}
+
+/* Fade ke putih di bagian bawah (mask) */
+.hero-layer-blur::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, transparent 83%, #ffffff 100%);
+  z-index: 1;
+}
+
+.hero-layer-content {
+  position: relative;
+  z-index: 2;
 }

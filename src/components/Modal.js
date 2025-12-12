@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useTheme } from '@/contexts/ThemeContext';
 import { IoClose } from 'react-icons/io5';
 import Button from './Button';
 
@@ -16,7 +15,6 @@ export default function Modal({
   icon = null,
   actions = null, // Array of { label, onClick, variant }
 }) {
-  const { theme } = useTheme();
   const [isVisible, setIsVisible] = useState(false);
   const [isAnimating, setIsAnimating] = useState(false);
 
@@ -117,11 +115,7 @@ export default function Modal({
       >
         {/* Modal Content */}
         <div
-          className={`relative rounded-2xl border p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.35)] overflow-hidden ${
-            theme === 'dark'
-              ? 'bg-gradient-to-br from-indigo-900/80 to-purple-900/80 border-white/10'
-              : 'bg-gradient-to-br from-white/95 to-indigo-50/95 border-indigo-200/50'
-          }`}
+          className="relative rounded-2xl border p-6 md:p-8 shadow-[0_0_25px_rgba(0,0,0,0.35)] overflow-hidden bg-gradient-to-br from-white/95 to-[#F6F4F0]/95 border-[#75B2AB]/50"
         >
           {/* Subtle bubble glow effect inside */}
           <div className={`absolute -top-10 -right-10 w-32 h-32 rounded-full filter blur-2xl opacity-30 pointer-events-none bg-gradient-to-br ${typeAccents[type]}`} />
@@ -131,11 +125,7 @@ export default function Modal({
           {showCloseButton && (
             <button
               onClick={onClose}
-              className={`absolute top-4 right-4 p-2 rounded-full transition-all duration-300 hover:scale-110 ${
-                theme === 'dark'
-                  ? 'text-white/60 hover:text-white hover:bg-white/10'
-                  : 'text-gray-500 hover:text-gray-800 hover:bg-gray-100'
-              }`}
+              className="absolute top-4 right-4 p-2 rounded-full transition-all duration-300 hover:scale-110 text-gray-500 hover:text-gray-800 hover:bg-gray-100"
               aria-label="Close modal"
             >
               <IoClose className="text-xl" />
@@ -153,20 +143,14 @@ export default function Modal({
           {title && (
             <h2
               id="modal-title"
-              className={`text-xl md:text-2xl font-semibold tracking-tight text-center mb-4 ${
-                theme === 'dark' ? 'text-white' : 'text-gray-900'
-              }`}
+              className="text-xl md:text-2xl font-geist bold tracking-tight text-center mb-4 text-gray-900"
             >
               {title}
             </h2>
           )}
 
           {/* Body Content */}
-          <div
-            className={`text-sm leading-relaxed text-center ${
-              theme === 'dark' ? 'text-white/80' : 'text-gray-600'
-            }`}
-          >
+          <div className="text-sm font-geist mono leading-relaxed text-center text-gray-600">
             {children}
           </div>
 

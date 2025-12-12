@@ -11,6 +11,8 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { HiBeaker } from 'react-icons/hi2';
 import { MdLogin } from 'react-icons/md';
 import { FaCheckCircle, FaTimesCircle, FaGoogle } from 'react-icons/fa';
+import Image from 'next/image';
+
 
 function LoginForm() {
   const router = useRouter();
@@ -92,36 +94,23 @@ function LoginForm() {
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-500 ${
-      theme === 'dark'
-        ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900'
-        : 'bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100'
-    }`}>
-      {/* Bubble Background Elements */}
-      <div className={`absolute top-10 left-10 w-48 h-48 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-float ${
-        theme === 'dark' ? 'bg-blue-600' : 'bg-blue-300'
-      }`}></div>
-      <div className={`absolute bottom-10 right-10 w-56 h-56 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-float ${
-        theme === 'dark' ? 'bg-purple-600' : 'bg-purple-300'
-      }`} style={{animationDelay: '1s'}}></div>
-      
-      <div className="max-w-md w-full relative z-10">
-        <div className="text-center mb-8">
-          <div className="inline-block mb-4">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-2xl mx-auto animate-pulse-glow">
-              <HiBeaker className="text-4xl text-white" />
+    <div
+      className={`min-h-screen flex items-center justify-center px-4 py-12 transition-colors duration-500 ${
+        theme === 'dark' ? 'bg-slate-950' : 'bg-register-gradient'
+      }`}
+    >
+        <div className="max-w-xl w-full mx-auto space-y-8">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex items-center gap-3">
+              <Image src="/logotext.svg" alt="Logo" width={300} height={300} />
             </div>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">GenLearn</h1>
-          <h2 className={`text-2xl font-semibold ${
-            theme === 'dark' ? 'text-white' : 'text-gray-700'
-          }`}>Login ke Akun Anda</h2>
-          <p className={`mt-2 ${
-            theme === 'dark' ? 'text-gray-300' : 'text-gray-500'
-          }`}>Selamat datang kembali! Masuk untuk melanjutkan perjalanan Anda</p>
-        </div>
-
         <Card>
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold font-geist text-gray-900">Log In</h2>
+            <p className="text-sm font-geist mono text-gray-500">Let's Continue Exploring Your Potential</p>
+          </div>
+
           {registered && (
             <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-2xl">
               <p className="text-green-700 text-sm font-medium flex items-center gap-2">
@@ -177,7 +166,7 @@ function LoginForm() {
               <div className="w-full border-t border-gray-300"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className={`px-4 ${theme === 'dark' ? 'bg-white text-gray-500' : 'bg-white text-gray-500'}`}>atau</span>
+              <span className={`px-4 font-geist mono bg-[#F6F4F0] text-gray-600 `}>or</span>
             </div>
           </div>
 
@@ -189,14 +178,14 @@ function LoginForm() {
             disabled={googleLoading}
             className="w-full flex items-center justify-center gap-3 py-3"
           >
-            <FaGoogle className="text-red-500" />
+            <FaGoogle className="text-teal-500" />
             {googleLoading ? 'Menghubungkan...' : 'Login dengan Google'}
           </Button>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Belum punya akun?{' '}
-              <Link href="/auth/register" className="text-blue-600 hover:text-purple-600 font-semibold transition-colors">
+              <Link href="/auth/register" className="text-teal-600 hover:text-teal-700 font-semibold transition-colors">
                 Daftar di sini
               </Link>
             </p>
