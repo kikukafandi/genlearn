@@ -10,6 +10,7 @@ import Card from '@/components/Card';
 import { useTheme } from '@/contexts/ThemeContext';
 import { HiBeaker } from 'react-icons/hi2';
 import { FaUserPlus, FaTimesCircle, FaGoogle } from 'react-icons/fa';
+import Image from 'next/image';
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -18,7 +19,8 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -69,12 +71,20 @@ export default function RegisterPage() {
     setLoading(true);
 
     try {
+      if (formData.password !== formData.confirmPassword) {
+        setError('Password dan konfirmasi password tidak sama');
+        setLoading(false);
+        return;
+      }
+
+      const { name, email, password } = formData;
+
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify({ name, email, password })
       });
 
       const data = await res.json();
@@ -90,38 +100,24 @@ export default function RegisterPage() {
       setLoading(false);
     }
   };
-
   return (
-    <div className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-500 ${
-      theme === 'dark'
-        ? 'bg-gradient-to-br from-gray-900 via-blue-900 to-purple-900'
-        : 'bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100'
-    }`}>
-      {/* Bubble Background Elements */}
-      <div className={`absolute top-10 right-10 w-48 h-48 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-float ${
-        theme === 'dark' ? 'bg-purple-600' : 'bg-purple-300'
-      }`}></div>
-      <div className={`absolute bottom-10 left-10 w-56 h-56 rounded-full mix-blend-multiply filter blur-2xl opacity-30 animate-float ${
-        theme === 'dark' ? 'bg-blue-600' : 'bg-blue-300'
-      }`} style={{animationDelay: '1s'}}></div>
-      
-      <div className="max-w-md w-full relative z-10">
-        <div className="text-center mb-8">
-          <div className="inline-block mb-4">
-            <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-2xl mx-auto animate-pulse-glow">
-              <HiBeaker className="text-4xl text-white" />
-            </div>
+    <div
+      className={`min-h-screen flex items-center justify-center px-4 py-12 transition-colors duration-500 ${
+        theme === 'dark' ? 'bg-slate-950' : 'bg-register-gradient'
+      }`}
+    >
+      <div className="max-w-xl w-full mx-auto space-y-8">
+        <div className="flex flex-col items-center gap-4">
+          <div className="flex items-center gap-3">
+            <Image src="/logotext.svg" alt="Logo" width={300} height={300} />
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">GenLearn</h1>
-          <h2 className={`text-2xl font-semibold ${
-            theme === 'dark' ? 'text-white' : 'text-gray-700'
-          }`}>Buat Akun Baru</h2>
-          <p className={`mt-2 ${
-            theme === 'dark' ? 'text-gray-300' : 'text-gray-500'
-          }`}>Bergabunglah dan temukan jurusan ideal Anda</p>
         </div>
 
-        <Card>
+        <Card className="w-full">
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold font-geist text-gray-900">Create Account</h2>
+            <p className="text-sm font-geist mono text-gray-500">Start mapping your skill genome</p>
+          </div>
           <form onSubmit={handleSubmit}>
             {error && (
               <div className="mb-4 p-4 bg-gradient-to-r from-red-50 to-rose-50 border-2 border-red-300 rounded-2xl">
@@ -162,23 +158,33 @@ export default function RegisterPage() {
               required
             />
 
+            <Input
+              label="Konfirmasi Password"
+              type="password"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              placeholder="Ulangi password"
+              required
+            />
+
             <Button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 flex items-center justify-center gap-2"
+              className="w-full mt-4 flex items-center justify-center gap-2 bg-teal hover:bg-teal-700"
             >
               <FaUserPlus />
-              {loading ? 'Mendaftar...' : 'Daftar Sekarang'}
+              {loading ? 'Mendaftar...' : 'Create Account'}
             </Button>
           </form>
 
           {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className={`px-4 ${theme === 'dark' ? 'bg-zinc-800 text-gray-400' : 'bg-white text-gray-500'}`}>atau</span>
+              <span className="px-4 bg-white text-gray-500">atau</span>
             </div>
           </div>
 
@@ -190,14 +196,17 @@ export default function RegisterPage() {
             disabled={googleLoading}
             className="w-full flex items-center justify-center gap-3 py-3"
           >
-            <FaGoogle className="text-red-500" />
+            <FaGoogle className="text-teal-500" />
             {googleLoading ? 'Menghubungkan...' : 'Daftar dengan Google'}
           </Button>
 
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Sudah punya akun?{' '}
-              <Link href="/auth/login" className="text-blue-600 hover:text-purple-600 font-semibold transition-colors">
+              <Link
+                href="/auth/login"
+                className="text-teal-700 hover:text-teal-800 font-semibold transition-colors"
+              >
                 Login di sini
               </Link>
             </p>

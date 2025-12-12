@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-export default function DnaHelix({ skillData, psychologyData, width = 800, height = 600, theme = 'light' }) {
+export default function DnaHelix({ skillData, psychologyData, width = 800, height = 600}) {
     const svgRef = useRef(null);
 
     useEffect(() => {
@@ -291,7 +291,7 @@ export default function DnaHelix({ skillData, psychologyData, width = 800, heigh
             .attr('text-anchor', 'middle')
             .attr('font-size', '24px')
             .attr('font-weight', 'bold')
-            .attr('fill', theme === 'dark' ? '#60a5fa' : 'url(#dna-gradient-1)')
+            .attr('fill', '#f6806d')
             .text('DNA Skill & Psikologi Anda')
             .attr('opacity', 0)
             .transition()
@@ -310,76 +310,69 @@ export default function DnaHelix({ skillData, psychologyData, width = 800, heigh
         // Uncomment below for auto-rotation
         // animate();
 
-    }, [skillData, psychologyData, width, height, theme]);
+    }, [skillData, psychologyData, width, height]);
 
     return (
         <div className="w-full flex flex-col gap-6">
             {/* Legend */}
-            <div className={`rounded-3xl p-6 shadow-xl border-2 transition-colors duration-500 ${theme === 'dark'
-                    ? 'bg-gradient-to-br from-gray-800 via-blue-900 to-purple-900 border-blue-700'
-                    : 'bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100 border-blue-200'
-                }`}>
-                <h3 className={`text-xl font-bold mb-4 text-center ${theme === 'dark' ? 'text-white' : 'text-gray-800'
-                    }`}>Keterangan Warna</h3>
+            <div className="rounded-3xl p-6 shadow-xl border-2 bg-[#F6F4F0] border-[#75B2AB]">
+                <h3 className="text-xl font-geist bold mb-4 text-center text-[#0B6B64]">Keterangan Warna</h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-green-500 shadow-lg" style={{ boxShadow: '0 0 15px rgba(16, 185, 129, 0.6)' }}></div>
+                        <div className="w-8 h-8 rounded-full bg-[#0B6B64] shadow-lg"></div>
                         <div>
-                            <p className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Skill Kuat</p>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Keahlian utama</p>
+                            <p className="font-geist bold text-sm text-gray-900">Skill Kuat</p>
+                            <p className="text-xs font-geist mono text-gray-600">Keahlian utama</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-yellow-500 shadow-lg" style={{ boxShadow: '0 0 15px rgba(245, 158, 11, 0.6)' }}></div>
+                        <div className="w-8 h-8 rounded-full bg-[#f6806d] shadow-lg"></div>
                         <div>
-                            <p className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Skill Sedang</p>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Perlu pengembangan</p>
+                            <p className="font-geist bold text-sm text-gray-900">Skill Sedang</p>
+                            <p className="text-xs font-geist mono text-gray-600">Perlu pengembangan</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-red-500 shadow-lg" style={{ boxShadow: '0 0 15px rgba(239, 68, 68, 0.6)' }}></div>
+                        <div className="w-8 h-8 rounded-full bg-[#8b5cf6] shadow-lg"></div>
                         <div>
-                            <p className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Skill Lemah</p>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Butuh peningkatan</p>
+                            <p className="font-geist bold text-sm text-gray-900">Skill Lemah</p>
+                            <p className="text-xs font-geist mono text-gray-600">Butuh peningkatan</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-500 shadow-lg" style={{ boxShadow: '0 0 15px rgba(59, 130, 246, 0.6)' }}></div>
+                        <div className="w-8 h-8 rounded-full bg-[#75B2AB] shadow-lg"></div>
                         <div>
-                            <p className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Kognitif</p>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cara berpikir</p>
+                            <p className="font-geist bold text-sm text-gray-900">Kognitif</p>
+                            <p className="text-xs font-geist mono text-gray-600">Cara berpikir</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-purple-500 shadow-lg" style={{ boxShadow: '0 0 15px rgba(139, 92, 246, 0.6)' }}></div>
+                        <div className="w-8 h-8 rounded-full bg-[#8b5cf6] shadow-lg"></div>
                         <div>
-                            <p className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Gaya Belajar</p>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Metode belajar</p>
+                            <p className="font-geist bold text-sm text-gray-900">Gaya Belajar</p>
+                            <p className="text-xs font-geist mono text-gray-600">Metode belajar</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-pink-500 shadow-lg" style={{ boxShadow: '0 0 15px rgba(236, 72, 153, 0.6)' }}></div>
+                        <div className="w-8 h-8 rounded-full bg-[#f6806d] shadow-lg"></div>
                         <div>
-                            <p className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Motivasi</p>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Pendorong diri</p>
+                            <p className="font-geist bold text-sm text-gray-900">Motivasi</p>
+                            <p className="text-xs font-geist mono text-gray-600">Pendorong diri</p>
                         </div>
                     </div>
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-indigo-500 shadow-lg" style={{ boxShadow: '0 0 15px rgba(99, 102, 241, 0.6)' }}></div>
+                        <div className="w-8 h-8 rounded-full bg-[#0B6B64] shadow-lg"></div>
                         <div>
-                            <p className={`font-bold text-sm ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>Kepribadian</p>
-                            <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Karakter diri</p>
+                            <p className="font-geist bold text-sm text-gray-900">Kepribadian</p>
+                            <p className="text-xs font-geist mono text-gray-600">Karakter diri</p>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* DNA Helix Visualization */}
-            <div className={`rounded-3xl p-8 shadow-xl transition-colors duration-500 ${theme === 'dark'
-                ? 'bg-gradient-to-br from-gray-800 via-blue-900 to-purple-900'
-                : 'bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100'
-                }`}>
-                <svg ref={svgRef} className="w-full h-auto max-w-4xl"></svg>
+            <div className="rounded-3xl bg-[#F6F4F0] border-2 border-[#75B2AB] p-8 shadow-xl flex items-center justify-center">
+                <svg ref={svgRef} className="w-full h-auto max-w-4xl mx-auto"></svg>
             </div>
         </div>
     );
