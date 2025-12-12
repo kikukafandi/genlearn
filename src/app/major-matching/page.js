@@ -8,9 +8,9 @@ import Card from '@/components/Card';
 import Button from '@/components/Button';
 import { ConfirmModal, SuccessModal } from '@/components/Modal';
 import { BiTargetLock } from 'react-icons/bi';
-import { FaUniversity, FaCheckCircle, FaTrophy, FaMedal } from 'react-icons/fa';
+import { FaUniversity, FaCheckCircle, FaTrophy, FaMedal, FaRobot, FaLightbulb } from 'react-icons/fa';
 import { MdSchool } from 'react-icons/md';
-import { HiDocumentText } from 'react-icons/hi2';
+import { HiDocumentText, HiSparkles } from 'react-icons/hi2';
 
 export default function MajorMatchingPage() {
   const { data: session, status } = useSession();
@@ -24,6 +24,12 @@ export default function MajorMatchingPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [pendingMajorId, setPendingMajorId] = useState(null);
   const [pendingMajorName, setPendingMajorName] = useState('');
+  
+  // AI Explanation states
+  const [aiExplanations, setAiExplanations] = useState({});
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiGenerated, setAiGenerated] = useState(false);
+  const [dnaData, setDnaData] = useState({ skill: null, psycho: null });
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -39,6 +45,10 @@ export default function MajorMatchingPage() {
       if (res.ok) {
         const data = await res.json();
         setMatches(data.matches || []);
+        // Also store DNA data for AI explanation
+        if (data.dnaSkill || data.dnaPsycho) {
+          setDnaData({ skill: data.dnaSkill, psycho: data.dnaPsycho });
+        }
       } else {
         const error = await res.json();
         if (error.error?.includes('DNA')) {
@@ -49,6 +59,50 @@ export default function MajorMatchingPage() {
       console.error('Error fetching matches:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Generate AI explanation for majors
+  const generateAiExplanation = async () => {
+    if (matches.length === 0) return;
+    
+    setAiLoading(true);
+    try {
+      const top3 = matches.slice(0, 3);
+      const res = await fetch('/api/ai/major-explainer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dnaSkill: dnaData.skill,
+          dnaPsycho: dnaData.psycho,
+          topMajors: top3.map(m => ({
+            id: m.id,
+            name: m.name,
+            score: m.score,
+            traits: m.traits,
+            description: m.description
+          }))
+        })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        // Convert array to object keyed by major id
+        const explanationsMap = {};
+        data.majors.forEach(m => {
+          explanationsMap[m.id] = {
+            explanation: m.aiExplanation,
+            keyStrengths: m.keyStrengths,
+            growthAreas: m.growthAreas
+          };
+        });
+        setAiExplanations(explanationsMap);
+        setAiGenerated(true);
+      }
+    } catch (error) {
+      console.error('Error generating AI explanation:', error);
+    } finally {
+      setAiLoading(false);
     }
   };
 
@@ -202,6 +256,47 @@ export default function MajorMatchingPage() {
                         ))}
                       </ul>
                     </div>
+
+                    {/* AI Explanation Section */}
+                    {aiExplanations[match.id] && (
+                      <div className="mb-5 p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl border-2 border-purple-200">
+                        <h3 className="font-bold text-gray-900 mb-3 text-lg flex items-center gap-2">
+                          <HiSparkles className="text-purple-600" />
+                          <span>Insight AI untuk Anda:</span>
+                        </h3>
+                        <p className="text-gray-700 mb-4 leading-relaxed">
+                          {aiExplanations[match.id].explanation}
+                        </p>
+                        
+                        {aiExplanations[match.id].keyStrengths?.length > 0 && (
+                          <div className="mb-3">
+                            <p className="font-semibold text-purple-800 mb-2 flex items-center gap-2">
+                              <FaLightbulb className="text-yellow-500" /> Kekuatan Anda:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {aiExplanations[match.id].keyStrengths.map((strength, i) => (
+                                <span key={i} className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">
+                                  {strength}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        {aiExplanations[match.id].growthAreas?.length > 0 && (
+                          <div>
+                            <p className="font-semibold text-purple-800 mb-2">Area Pengembangan:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {aiExplanations[match.id].growthAreas.map((area, i) => (
+                                <span key={i} className="px-3 py-1 bg-pink-100 text-pink-800 rounded-full text-sm font-medium">
+                                  {area}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -228,7 +323,37 @@ export default function MajorMatchingPage() {
               </Card>
             ))}
 
-            <Card className="rounded-3xl">
+            {/* AI Explanation Card */}
+            <Card className={`rounded-3xl border-2 ${aiGenerated ? 'border-[#8b5cf6] bg-gradient-to-br from-[#FDF4FF] to-[#FCE7F3]' : 'border-[#75B2AB]/40 bg-white'}`}>
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${aiGenerated ? 'bg-gradient-to-br from-[#8b5cf6] to-[#f6806d]' : 'bg-gradient-to-br from-[#75B2AB] to-[#8b5cf6]'}`}>
+                    <FaRobot className="text-2xl text-white" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-geist bold text-teal-800">AI Major Explanation</h3>
+                    <p className="text-sm text-gray-600">
+                      {aiGenerated ? 'Insight AI sudah tersedia di setiap kartu jurusan' : 'Dapatkan penjelasan personal dari AI tentang kecocokan Anda'}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={generateAiExplanation}
+                  disabled={aiLoading || aiGenerated}
+                  className={`flex items-center gap-2 rounded-full px-6 ${aiGenerated ? 'bg-white text-teal-700 border border-[#75B2AB]' : ''}`}
+                >
+                  {aiLoading ? (
+                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Generating...</>
+                  ) : aiGenerated ? (
+                    <><HiSparkles className="text-[#f6806d]" /> Insight Generated</>
+                  ) : (
+                    <><HiSparkles /> Generate AI Insight</>
+                  )}
+                </Button>
+              </div>
+            </Card>
+
+            <Card className="rounded-3xl bg-white border-2 border-[#75B2AB]/40">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-[#75B2AB] to-teal-400 rounded-full flex items-center justify-center shadow-lg">
                   <MdSchool className="text-2xl text-white" />

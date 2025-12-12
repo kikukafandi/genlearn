@@ -10,10 +10,11 @@ import Input from '@/components/Input';
 import DnaHelix from '@/components/DnaHelix';
 import DnaNetwork from '@/components/DnaNetwork';
 import Modal, { ConfirmModal, SuccessModal, ErrorModal } from '@/components/Modal';
-import { FaDna, FaNetworkWired, FaFire, FaStar, FaChartLine } from 'react-icons/fa';
+import { FaDna, FaNetworkWired, FaFire, FaStar, FaChartLine, FaRobot } from 'react-icons/fa';
 import { GiBrain, GiBookshelf } from 'react-icons/gi';
 import { MdPsychology, MdEmojiPeople, MdSchool } from 'react-icons/md';
 import { BiTargetLock } from 'react-icons/bi';
+import { HiSparkles } from 'react-icons/hi2';
 
 const psychologyQuestions = [
   { id: 1, question: 'Saya lebih suka bekerja dengan data dan angka', category: 'cognitive' },
@@ -41,6 +42,11 @@ export default function DnaPage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // AI Interpretation states
+  const [aiNarrative, setAiNarrative] = useState('');
+  const [aiLoading, setAiLoading] = useState(false);
+  const [showAiSection, setShowAiSection] = useState(false);
 
   // Step 1: Skill data
   const [skillData, setSkillData] = useState({
@@ -145,6 +151,47 @@ export default function DnaPage() {
   const handleSuccessClose = () => {
     setShowSuccessModal(false);
     router.push('/major-matching');
+  };
+
+  // Generate AI Interpretation
+  const generateAiInterpretation = async () => {
+    if (!existingData?.dnaSkill || !existingData?.dnaPsychology) {
+      setErrorMessage('Data DNA tidak lengkap untuk menghasilkan interpretasi.');
+      setShowErrorModal(true);
+      return;
+    }
+
+    setAiLoading(true);
+    setShowAiSection(true);
+
+    try {
+      const res = await fetch('/api/ai/dna-interpretation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          dnaSkill: existingData.dnaSkill,
+          dnaPsycho: existingData.dnaPsychology,
+          type: 'full'
+        })
+      });
+
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        setAiNarrative(data.narrative);
+      } else {
+        throw new Error(data.error || 'Gagal menghasilkan interpretasi');
+      }
+    } catch (error) {
+      console.error('AI Interpretation error:', error);
+      setErrorMessage(error.message || 'Gagal menghasilkan interpretasi AI. Silakan coba lagi.');
+      setShowErrorModal(true);
+      setAiNarrative('');
+    } finally {
+      setAiLoading(false);
+    }
   };
 
   if (status === 'loading') {
@@ -287,7 +334,79 @@ export default function DnaPage() {
               </div>
             </div>
 
-            <Button onClick={() => router.push('/major-matching')} className="w-full flex items-center justify-center gap-2 bg-[#f6806d] hover:bg-[#f46a54] rounded-xl">
+            {/* AI Interpretation Section */}
+            <div className="mb-8">
+              <div className="flex items-center justify-between mb-5">
+                <div className="flex items-center gap-3">
+                  <HiSparkles className="text-3xl text-[#f6806d]" />
+                  <h2 className="text-3xl font-geist bold text-teal-800">Interpretasi AI</h2>
+                </div>
+                {!showAiSection && (
+                  <Button 
+                    onClick={generateAiInterpretation}
+                    className="flex items-center gap-2 bg-[#f6806d] hover:bg-[#f46a54] rounded-full px-6"
+                  >
+                    <FaRobot className="text-lg" />
+                    Generate Interpretasi
+                  </Button>
+                )}
+              </div>
+
+              {!showAiSection ? (
+                <div className="p-6 rounded-3xl border-2 border-dashed border-[#75B2AB] bg-[#E8F5F3] text-center">
+                  <HiSparkles className="text-5xl text-[#75B2AB] mx-auto mb-4" />
+                  <p className="text-lg font-geist bold text-teal-800 mb-2">
+                    Dapatkan Interpretasi DNA yang Dipersonalisasi
+                  </p>
+                  <p className="text-sm font-geist mono text-gray-700">
+                    AI akan menganalisis profil DNA Anda dan memberikan narasi mendalam tentang potensi akademis Anda
+                  </p>
+                </div>
+              ) : aiLoading ? (
+                <div className="p-8 rounded-3xl border-2 border-[#75B2AB] bg-[#E8F5F3] text-center">
+                  <div className="flex flex-col items-center gap-4">
+                    <div className="relative">
+                      <div className="w-16 h-16 bg-gradient-to-br from-[#75B2AB] to-[#8b5cf6] rounded-full flex items-center justify-center shadow-xl animate-pulse">
+                        <FaRobot className="text-3xl text-white" />
+                      </div>
+                      <div className="absolute inset-0 w-16 h-16 bg-[#75B2AB] rounded-full animate-ping opacity-30" />
+                    </div>
+                    <p className="text-lg font-geist bold text-teal-800">
+                      AI sedang menganalisis DNA Anda...
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      Mohon tunggu sebentar
+                    </p>
+                  </div>
+                </div>
+              ) : aiNarrative ? (
+                <div className="p-6 rounded-3xl border-2 border-[#75B2AB] bg-gradient-to-br from-[#F6F4F0] via-[#e8f5f3] to-[#f0e8f7] shadow-lg">
+                  <div className="flex items-center gap-2 mb-4 text-teal-800">
+                    <FaRobot className="text-xl" />
+                    <span className="font-geist bold">
+                      Analisis AI GenLearn
+                    </span>
+                  </div>
+                  <div className="prose max-w-none">
+                    <p className="leading-relaxed whitespace-pre-line text-gray-700 font-geist mono">
+                      {aiNarrative}
+                    </p>
+                  </div>
+                  <div className="mt-4 pt-4 border-t border-[#75B2AB]/30 flex justify-end">
+                    <Button 
+                      onClick={generateAiInterpretation}
+                      variant="outline"
+                      className="flex items-center gap-2 text-sm rounded-full border-[#75B2AB] text-teal-800"
+                    >
+                      <HiSparkles className="text-sm" />
+                      Generate Ulang
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
+
+            <Button onClick={() => router.push('/major-matching')} className="w-full flex items-center justify-center gap-2 bg-[#f6806d] hover:bg-[#f46a54] rounded-full font-geist bold mt-6">
               <MdSchool className="text-xl" />
               Lanjut ke Matching Jurusan
             </Button>
@@ -320,7 +439,7 @@ export default function DnaPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-3">
             <span className="text-base font-geist text-gray-700">Step {step} of 2</span>
-            <span className="text-sm font-geist mono px-4 py-2 rounded-full shadow bg-[#F6F4F0] text-gray-600 border border-[#A7A7A7]">
+            <span className="text-sm font-geist mono px-4 py-2 rounded-full shadow bg-white/80 text-gray-600 border border-[#75B2AB]/40">
               {step === 1 ? '💪 DNA Skill' : '🧠 DNA Psikologi'}
             </span>
           </div>
@@ -333,7 +452,7 @@ export default function DnaPage() {
         </div>
 
         {step === 1 && (
-          <Card className="bg-[#F6F4F0] border border-[#A7A7A7] rounded-3xl shadow-xl">
+          <Card className="bg-[#F6F4F0] border border-[#75B2AB] rounded-3xl shadow-xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-14 h-14 bg-gradient-to-br from-[#75B2AB] to-[#06b6d4] rounded-full flex items-center justify-center shadow-lg">
                 <FaFire className="text-3xl text-white" />
@@ -350,7 +469,7 @@ export default function DnaPage() {
                 value={skillData.rawSkills}
                 onChange={handleSkillChange}
                 placeholder="Contoh: programming, desain grafis, public speaking, analisis data"
-                className="w-full px-5 py-4 border rounded-xl focus:ring-4 focus:ring-[#75B2AB]/20 focus:border-[#75B2AB] outline-none transition-all shadow-sm bg-white border-[#A7A7A7] text-gray-900 placeholder-gray-400 hover:border-[#75B2AB] font-geist mono"
+                className="w-full px-5 py-4 border rounded-xl focus:ring-4 focus:ring-[#75B2AB]/20 focus:border-[#75B2AB] outline-none transition-all shadow-sm bg-white border-[#75B2AB]/40 text-gray-900 placeholder-gray-400 hover:border-[#75B2AB] font-geist mono"
                 rows="3"
                 required
               />
@@ -365,7 +484,7 @@ export default function DnaPage() {
                 value={skillData.experiences}
                 onChange={handleSkillChange}
                 placeholder="Contoh: organisasi, magang, proyek, kompetisi"
-                className="w-full px-5 py-4 border rounded-xl focus:ring-4 focus:ring-[#75B2AB]/20 focus:border-[#75B2AB] outline-none transition-all shadow-sm bg-white border-[#A7A7A7] text-gray-900 placeholder-gray-400 hover:border-[#75B2AB] font-geist mono"
+                className="w-full px-5 py-4 border rounded-xl focus:ring-4 focus:ring-[#75B2AB]/20 focus:border-[#75B2AB] outline-none transition-all shadow-sm bg-white border-[#75B2AB]/40 text-gray-900 placeholder-gray-400 hover:border-[#75B2AB] font-geist mono"
                 rows="3"
                 required
               />
@@ -380,20 +499,22 @@ export default function DnaPage() {
                 value={skillData.interest}
                 onChange={handleSkillChange}
                 placeholder="Contoh: teknologi, seni, bisnis, kesehatan"
-                className="w-full px-5 py-4 border rounded-xl focus:ring-4 focus:ring-[#75B2AB]/20 focus:border-[#75B2AB] outline-none transition-all shadow-sm bg-white border-[#A7A7A7] text-gray-900 placeholder-gray-400 hover:border-[#75B2AB] font-geist mono"
+                className="w-full px-5 py-4 border rounded-xl focus:ring-4 focus:ring-[#75B2AB]/20 focus:border-[#75B2AB] outline-none transition-all shadow-sm bg-white border-[#75B2AB]/40 text-gray-900 placeholder-gray-400 hover:border-[#75B2AB] font-geist mono"
                 rows="3"
                 required
               />
             </div>
 
-            <Button onClick={handleNextStep} className="w-full bg-[#f6806d] hover:bg-[#f46a54] rounded-xl font-geist bold">
-              ➡️ Lanjut ke Pertanyaan Psikologi
-            </Button>
+            <div className="flex gap-3">
+              <Button onClick={handleNextStep} className="flex-1 bg-[#f6806d] hover:bg-[#f46a54] rounded-full font-geist bold">
+                ➡️ Lanjut ke Pertanyaan Psikologi
+              </Button>
+            </div>
           </Card>
         )}
 
         {step === 2 && (
-          <Card className="bg-[#F6F4F0] border border-[#A7A7A7] rounded-3xl shadow-xl">
+          <Card className="bg-[#F6F4F0] border border-[#75B2AB] rounded-3xl shadow-xl">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-14 h-14 bg-gradient-to-br from-[#8b5cf6] to-[#a855f7] rounded-full flex items-center justify-center shadow-lg">
                 <GiBrain className="text-3xl text-white" />
@@ -474,6 +595,7 @@ export default function DnaPage() {
           message={errorMessage}
           buttonText="Tutup"
         />
+
       </main>
     </div>
   );
