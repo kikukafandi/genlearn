@@ -16,6 +16,8 @@ model User {
 
   dnaSkill      UserDnaSkill?
   dnaPsychology UserDnaPsychology?
+  aiInterpretations AiInterpretation[]
+  recommendations UserRecommendation[]
 }
 
 model UserDnaSkill {
@@ -46,7 +48,38 @@ model UserDnaPsychology {
 model Major {
   id          Int    @id @default(autoincrement())
   name        String
+  university  String?
+  category    String?
   description String @db.Text
+  prospects   String? @db.Text
+  skills      String? @db.Text
   traits      String @db.Text
   mk          String @db.Text
+  metadata    String? @db.Text
+}
+
+model UserRecommendation {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  recommendations String   @db.LongText
+  createdAt       DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+}
+
+model AiInterpretation {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  type        String   // 'dna', 'major', etc.
+  category    String?  // 'full', 'summary', etc.
+  prompt      String   @db.Text
+  response    String   @db.LongText
+  metadata    String?  @db.Text // JSON untuk data tambahan
+  createdAt   DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, createdAt])
 }

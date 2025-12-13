@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { generateMajorExplanation } from '@/lib/ai/majorExplanation';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request) {
   try {
@@ -55,6 +56,21 @@ export async function POST(request) {
         keyStrengths: aiExplanation?.keyStrengths || [],
         growthAreas: aiExplanation?.growthAreas || []
       };
+    });
+
+    // Save interpretation to database
+    await prisma.aiInterpretation.create({
+      data: {
+        userId: parseInt(session.user.id),
+        type: 'major',
+        category: 'explanation',
+        prompt: JSON.stringify({ dnaSkill, dnaPsycho, topMajors: topMajors.map(m => m.name) }),
+        response: JSON.stringify(majorsWithExplanation),
+        metadata: JSON.stringify({
+          majorCount: topMajors.length,
+          majorNames: topMajors.map(m => m.name)
+        })
+      }
     });
 
     return NextResponse.json({
