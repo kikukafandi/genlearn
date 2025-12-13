@@ -1,83 +1,35 @@
-# GenLearn - Platform Pembelajaran Adaptif
+# GenLearn - Platform Penemuan Potensi & Jurusan Kuliah
 
-Platform pembelajaran adaptif yang membantu mahasiswa menemukan jurusan ideal berdasarkan DNA skill dan psikologi.
+**GenLearn** adalah platform edukasi yang dirancang untuk membantu siswa menemukan kenyamanan dalam belajar. Melalui analisis mendalam terhadap dua pilar utama—**DNA Skill** dan **DNA Psikologi**—kami membantu pengguna menemukan jurusan dan keterampilan yang paling sesuai dengan jati diri mereka, sehingga proses pendidikan menjadi lebih selaras dan menyenangkan.
 
-## Tech Stack
+## Fitur Unggulan
 
-- **Framework**: Next.js 14 (App Router)
-- **Language**: JavaScript
-- **Styling**: Tailwind CSS
-- **Database**: MySQL
-- **ORM**: Prisma
-- **Authentication**: NextAuth.js (Auth.js)
-- **Password Hashing**: bcryptjs
+### 1. Asesmen DNA Komprehensif
+GenLearn tidak hanya melihat nilai akademis, tetapi menggali potensi diri melalui dua pilar utama:
+- **DNA Skill**: Menganalisis keterampilan teknis (*Hard Skills*), pengalaman masa lalu, serta memetakan area kekuatan dan kelemahan siswa secara mendetail.
+- **DNA Psikologi**: Memahami profil kognitif, gaya belajar, motivasi intrinsik, dan kepribadian (*Traits*) untuk menentukan lingkungan belajar yang paling optimal.
 
-## Features
+### 2. AI-Powered Interpretation & Matching
+Teknologi AI kami menerjemahkan data asesmen yang kompleks menjadi wawasan yang mudah dipahami:
+- **Interpretasi Personal**: Mendapatkan penjelasan naratif mengenai karakter dan potensi diri, bukan sekadar angka skor.
+- **Rekomendasi Jurusan Cerdas**: Algoritma pencocokan yang memberikan daftar jurusan kuliah dengan probabilitas kesuksesan dan kepuasan tertinggi bagi pengguna.
 
-1. **Authentication System** - Register & Login dengan credentials
-2. **DNA Assessment** - DNA Skill dan Psikologi
-3. **Major Matching** - Rekomendasi 10 jurusan dengan scoring
-4. **Minimum Keilmuan** - Persyaratan minimum setiap jurusan
-5. **Modul Pembelajaran** - Program 4 minggu adaptif
-6. **Simulator** - Simulasi tugas kuliah per jurusan
+### 3. Peta Jalan Pembelajaran (Learning Path)
+Setelah menemukan jurusan impian, GenLearn menyediakan kurikulum persiapan yang adaptif:
+- **Program 4 Minggu**: Modul pembelajaran terstruktur untuk mempersiapkan dasar keilmuan sebelum masuk kuliah.
+- **Minimum Keilmuan**: Panduan persyaratan dasar yang harus dikuasai untuk bertahan dan unggul di jurusan tersebut.
 
-## Getting Started
+### 4. Simulator Karir & Perkuliahan
+Fitur unik untuk "mencicipi" jurusan sebelum benar-benar mendaftar:
+- **Simulasi Tugas**: Pengguna dapat mencoba mengerjakan contoh tugas nyata yang biasa dihadapi mahasiswa di jurusan tersebut.
+- **Gambaran Prospek**: Informasi mendalam mengenai prospek karir dan realitas dunia kerja terkait.
 
-### 1. Install Dependencies
+## Alur Penggunaan
 
-```bash
-npm install
-```
+1. **Registrasi & Profiling**: Buat akun dan lengkapi data diri dasar.
+2. **Tes DNA**: Ikuti serangkaian asesmen interaktif untuk memetakan profil Skill dan Psikologi.
+3. **Analisis AI**: Dapatkan laporan mendalam mengenai potensi diri Anda yang di-generate oleh AI.
+4. **Eksplorasi Jurusan**: Lihat rekomendasi jurusan yang paling cocok (*Match Score*) berdasarkan data DNA Anda.
+5. **Simulasi & Belajar**: Mulai pelajari materi dasar dan coba simulasi tugas untuk memvalidasi pilihan jurusan Anda.
 
-### 2. Setup Database
-
-```bash
-# Buat database MySQL
-CREATE DATABASE genlearn;
-
-# Copy environment file
-cp .env.example .env
-
-# Edit .env dengan kredensial database Anda
-```
-
-### 3. Run Prisma
-
-```bash
-npx prisma generate
-npx prisma db push
-npx prisma db seed
-```
-
-### 4. Run Development Server
-
-```bash
-npm run dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser.
-
-## Project Structure
-
-```
-/src
-  /app              # Pages and API routes
-  /components       # Reusable UI components
-  /lib              # Libraries (auth, prisma)
-  middleware.js     # Route protection
-/prisma             # Database schema and seeder
-```
-
-## Usage Flow
-
-1. Register → Login → Dashboard
-2. DNA Assessment → Major Matching
-3. Select Major → Minimum Keilmuan
-4. Modules → Simulator
-
-## Learn More
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Prisma Documentation](https://www.prisma.io/docs)
-- [NextAuth.js Documentation](https://next-auth.js.org)
 

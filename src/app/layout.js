@@ -11,12 +11,12 @@ const montserrat = Montserrat({
 
 export const metadata = {
   title: "GenLearn - Platform Pembelajaran Adaptif",
-  description: "Platform pembelajaran adaptif yang membantu mahasiswa menemukan jurusan ideal berdasarkan DNA skill dan psikologi",
+  description: "Platform pembelajaran adaptif yang membantu siswa menemukan jurusan ideal berdasarkan DNA skill dan psikologi",
   keywords: "pembelajaran, jurusan, DNA skill, psikologi, matching jurusan",
   authors: [{ name: "GenLearn" }],
   openGraph: {
     title: "GenLearn - Platform Pembelajaran Adaptif",
-    description: "Platform pembelajaran adaptif yang membantu mahasiswa menemukan jurusan ideal",
+    description: "Platform pembelajaran adaptif yang membantu siswa menemukan jurusan ideal",
     type: "website",
     locale: "id_ID",
   },
