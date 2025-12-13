@@ -191,7 +191,7 @@ export default function MajorMatchingPage() {
         ) : (
           <div className="space-y-6">
             {top3Matches.map((match, index) => (
-              <Card key={match.id} className={`relative animate-bubble-pop rounded-3xl ${
+              <Card key={match.id} className={`relative animate-bubble-pop rounded-3xl bg-white/95 backdrop-blur border ${
                 index === 0 ? 'border-2 border-[#f6806d]' : 
                 index === 1 ? 'border-2 border-[#75B2AB]' : 
                 'border-2 border-[#8b5cf6]'
@@ -324,10 +324,10 @@ export default function MajorMatchingPage() {
             ))}
 
             {/* AI Explanation Card */}
-            <Card className={`rounded-3xl border-2 ${aiGenerated ? 'border-[#8b5cf6] bg-gradient-to-br from-[#FDF4FF] to-[#FCE7F3]' : 'border-[#75B2AB]/40 bg-white'}`}>
+            <Card className={`rounded-3xl border-2 ${aiGenerated ? 'border-[#75B2AB] bg-gradient-to-br from-[#E8F5F3] via-[#FDF4FF] to-[#FFF4EC]' : 'border-[#75B2AB]/40 bg-white'}`}>
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div className="flex items-center gap-3">
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${aiGenerated ? 'bg-gradient-to-br from-[#8b5cf6] to-[#f6806d]' : 'bg-gradient-to-br from-[#75B2AB] to-[#8b5cf6]'}`}>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${aiGenerated ? 'bg-gradient-to-br from-[#75B2AB] to-[#f6806d]' : 'bg-gradient-to-br from-[#75B2AB] to-[#8b5cf6]'}`}>
                     <FaRobot className="text-2xl text-white" />
                   </div>
                   <div>
@@ -340,7 +340,9 @@ export default function MajorMatchingPage() {
                 <Button
                   onClick={generateAiExplanation}
                   disabled={aiLoading || aiGenerated}
-                  className={`flex items-center gap-2 rounded-full px-6 ${aiGenerated ? 'bg-white text-teal-700 border border-[#75B2AB]' : ''}`}
+                  className={`flex items-center gap-2 rounded-full px-6 ${
+                    aiGenerated ? 'bg-white text-teal-700 border border-[#75B2AB]' : 'bg-[#f6806d] hover:bg-[#f46a54] text-white'
+                  }`}
                 >
                   {aiLoading ? (
                     <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Generating...</>
@@ -353,7 +355,7 @@ export default function MajorMatchingPage() {
               </div>
             </Card>
 
-            <Card className="rounded-3xl bg-white border-2 border-[#75B2AB]/40">
+            <Card className="rounded-3xl bg-gradient-to-br from-white via-[#F6F4F0] to-[#E8F5F3] border-2 border-[#75B2AB]/50 shadow-lg">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-12 h-12 bg-gradient-to-br from-[#75B2AB] to-teal-400 rounded-full flex items-center justify-center shadow-lg">
                   <MdSchool className="text-2xl text-white" />
@@ -384,8 +386,8 @@ export default function MajorMatchingPage() {
               <Button onClick={() => router.push('/modules')} className="flex items-center gap-2 bg-[#f6806d] hover:bg-[#f46a54] rounded-full font-geist bold px-8">
                 <HiDocumentText /> Lihat Modul Pembelajaran
               </Button>
-              <Button onClick={() => router.push('/simulator')} variant="outline" className="rounded-full border-[#75B2AB] text-teal-800 font-geist bold px-8">
-                🎮 Coba Simulator
+              <Button onClick={() => router.push('/simulator')} variant="outline" className="rounded-full border-[#75B2AB] text-teal-800 font-geist bold px-8 flex items-center gap-2">
+                <FaRobot /> Coba Simulator
               </Button>
             </div>
           </div>

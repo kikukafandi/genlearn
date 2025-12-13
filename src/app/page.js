@@ -7,6 +7,7 @@ import { FaDna, FaRocket, FaChartLine } from 'react-icons/fa';
 import { BiTargetLock } from 'react-icons/bi';
 import { MdPsychology } from 'react-icons/md';
 import Image from 'next/image';
+import { useSession } from 'next-auth/react';
 
 // Komponen Feature Card
 function FeatureCard({ icon, title, description, colorClass }) {
@@ -69,6 +70,7 @@ function BubbleCluster() {
 }
 
 export default function Home() {
+  const { status } = useSession();
   const heroBackground = 'bg-white';
   const contentBackground = 'bg-white';
   const heroTextColor = 'text-gray-900';
@@ -86,17 +88,27 @@ export default function Home() {
               <Image src="/logotr.svg" alt="Logo" width={30} height={30} />
             </div>
             <div className="ml-auto flex items-center gap-3 text-sm font-geist">
-              <Link
-                href="/auth/login"
-                className="transition-colors text-gray-600 hover:text-gray-900"
-              >
-                Sign In
-              </Link>
-              <Link href="/auth/register">
-                <span className="px-4 py-2 rounded-full bg-[#f6806d] text-white font-semibold shadow-lg hover:bg-[#f46a54] transition-colors">
-                  Get Started
-                </span>
-              </Link>
+              {status === 'authenticated' ? (
+                <Link href="/dashboard">
+                  <span className="px-4 py-2 rounded-full bg-[#f6806d] text-white font-semibold shadow-lg hover:bg-[#f46a54] transition-colors">
+                    Dashboard
+                  </span>
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href="/auth/login"
+                    className="transition-colors text-gray-600 hover:text-gray-900"
+                  >
+                    Sign In
+                  </Link>
+                  <Link href="/auth/register">
+                    <span className="px-4 py-2 rounded-full bg-[#f6806d] text-white font-semibold shadow-lg hover:bg-[#f46a54] transition-colors">
+                      Get Started
+                    </span>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </header>
@@ -123,9 +135,9 @@ export default function Home() {
                 journey.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mt-10">
-                <Link href="/auth/register">
+                <Link href={status === 'authenticated' ? "/dashboard" : "/auth/register"}>
                   <button className="px-8 py-3 rounded-xl bg-[#f6806d] text-white font-geist bold shadow-lg hover:bg-[#f46a54] transition-transform hover:-translate-y-0.5">
-                    Start Mapping
+                    {status === 'authenticated' ? 'Dashboard' : 'Start Mapping'}
                   </button>
                 </Link>
                 <Link href="#how-it-works">
@@ -251,9 +263,9 @@ export default function Home() {
           </h2>
           <p className="text-lg text-gray-700 mb-8 font-geist mono max-w-xl mx-auto relative z-10">
            Join thousands mapping their skill genome and accelerating their careers with AI-powered insights.          </p>
-          <Link href="/auth/register">
+          <Link href={status === 'authenticated' ? "/dashboard" : "/auth/register"}>
             <Button className="text-base px-10 py-4 bg-[#f6806d] text-white hover:bg-[#f46a54] shadow-xl font-geist bold relative z-10">
-              Daftar Sekarang
+              {status === 'authenticated' ? 'Dashboard' : 'Daftar Sekarang'}
             </Button>
           </Link>
         </div>
