@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
 }
 
 model User {
@@ -61,7 +62,7 @@ model Major {
 model UserRecommendation {
   id              Int      @id @default(autoincrement())
   userId          Int
-  recommendations String   @db.LongText
+  recommendations String   
   createdAt       DateTime @default(now())
   
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -75,7 +76,7 @@ model AiInterpretation {
   type        String   // 'dna', 'major', etc.
   category    String?  // 'full', 'summary', etc.
   prompt      String   @db.Text
-  response    String   @db.LongText
+  response    String   
   metadata    String?  @db.Text // JSON untuk data tambahan
   createdAt   DateTime @default(now())
   
