@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { generateDnaNarrative, generateDnaSummary } from '@/lib/ai/dnaInterpretation';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request) {
   try {
@@ -34,11 +35,27 @@ export async function POST(request) {
       result = await generateDnaNarrative({ dnaSkill, dnaPsycho });
     }
 
+    // Save interpretation to database
+    const savedInterpretation = await prisma.aiInterpretation.create({
+      data: {
+        userId: parseInt(session.user.id),
+        type: 'dna',
+        category: type,
+        prompt: JSON.stringify({ dnaSkill, dnaPsycho }),
+        response: result,
+        metadata: JSON.stringify({
+          hasSkill: !!dnaSkill,
+          hasPsycho: !!dnaPsycho
+        })
+      }
+    });
+
     return NextResponse.json({
       success: true,
       narrative: result,
       type: type,
-      generatedAt: new Date().toISOString()
+      interpretationId: savedInterpretation.id,
+      generatedAt: savedInterpretation.createdAt.toISOString()
     });
 
   } catch (error) {

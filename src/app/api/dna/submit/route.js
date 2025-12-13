@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
+import { calculateCompatibility } from '@/lib/matching';
 
 // Simple algorithm to analyze skills
 function analyzeSkills(rawSkills, experiences, interest) {
@@ -58,31 +59,50 @@ function analyzeSkills(rawSkills, experiences, interest) {
 
 // Simple algorithm to analyze psychology
 function analyzePsychology(answers) {
-  const categories = {
-    cognitive: [1, 5, 9],
-    learning: [2, 6, 10],
-    motivation: [3, 7],
-    trait: [4, 8]
+  // Helper untuk mendapatkan skor (handle jika undefined)
+  const getScore = (id) => parseInt(answers[id] || 0);
+
+  // Helper untuk menentukan label dominan (bisa ganda jika skor sama)
+  const getDominantType = (options) => {
+    const maxScore = Math.max(...options.map(o => o.score));
+    // Jika skor maksimal 0 atau sangat rendah, return default
+    if (maxScore === 0) return '-';
+    
+    const topTypes = options.filter(o => o.score === maxScore).map(o => o.type);
+    
+    if (topTypes.length === options.length) return 'Seimbang / All-Rounder';
+    return topTypes.join(' & ');
   };
 
-  const results = {};
+  // 1. Cognitive (Q1-Q3: RIASEC Based)
+  const cognitive = getDominantType([
+    { type: 'Analitis & Logis', score: getScore(1) },       // Investigative
+    { type: 'Terstruktur & Data', score: getScore(2) },     // Conventional
+    { type: 'Kreatif & Inovatif', score: getScore(3) }      // Artistic
+  ]);
 
-  for (const [category, questionIds] of Object.entries(categories)) {
-    const scores = questionIds.map(id => answers[id] || 0);
-    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+  // 2. Learning Style (Q4-Q6: VARK)
+  const learning = getDominantType([
+    { type: 'Visual (Grafis)', score: getScore(4) },
+    { type: 'Auditory (Diskusi)', score: getScore(5) },
+    { type: 'Kinestetik (Praktik)', score: getScore(6) }
+  ]);
 
-    if (category === 'cognitive') {
-      results.cognitive = avg >= 4 ? 'Analitis dan logis' : avg >= 3 ? 'Seimbang antara logis dan intuitif' : 'Lebih intuitif';
-    } else if (category === 'learning') {
-      results.learning = avg >= 4 ? 'Visual dan praktikal' : avg >= 3 ? 'Multimodal' : 'Auditory';
-    } else if (category === 'motivation') {
-      results.motivation = avg >= 4 ? 'Intrinsik dan berorientasi dampak' : avg >= 3 ? 'Campuran intrinsik-ekstrinsik' : 'Ekstrinsik';
-    } else if (category === 'trait') {
-      results.trait = avg >= 4 ? 'Sosial dan detail-oriented' : avg >= 3 ? 'Fleksibel' : 'Independen';
-    }
-  }
+  // 3. Motivation (Q7-Q9: McClelland)
+  const motivation = getDominantType([
+    { type: 'Dampak Sosial', score: getScore(7) },          // Affiliation
+    { type: 'Kepemimpinan', score: getScore(8) },           // Power
+    { type: 'Tantangan & Prestasi', score: getScore(9) }    // Achievement
+  ]);
 
-  return results;
+  // 4. Trait (Q10-Q12: Big Five)
+  const trait = getDominantType([
+    { type: 'Teliti & Detail', score: getScore(10) },       // Conscientiousness
+    { type: 'Kolaboratif', score: getScore(11) },           // Extraversion
+    { type: 'Adaptif & Tenang', score: getScore(12) }       // Emotional Stability
+  ]);
+
+  return { cognitive, learning, motivation, trait };
 }
 
 export async function POST(request) {
@@ -149,6 +169,50 @@ export async function POST(request) {
         trait: psychologyAnalysis.trait,
         answers: JSON.stringify(psychologyAnswers)
       }
+    });
+
+    // --- MAJOR MATCHING LOGIC ---
+    
+    // 1. Ambil semua jurusan dari DB
+    const allMajors = await prisma.major.findMany();
+
+    // 2. Lakukan Matching
+    const matchedMajors = allMajors.map(major => {
+      let traits = {};
+      let learning = {};
+      
+      // Parse metadata
+      if (major.metadata) {
+        try {
+          const meta = JSON.parse(major.metadata);
+          traits = meta.traits || {};
+          learning = meta.learning || {};
+        } catch (e) {
+          console.error('Failed to parse metadata for major', major.name);
+        }
+      }
+
+      const majorForMatching = { ...major, traits, learning };
+      
+      const score = calculateCompatibility(
+        { 
+          psychologyAnswers, 
+          rawSkills: skillData.rawSkills,
+          experiences: skillData.experiences, // Tambahkan ini
+          interest: skillData.interest        // Tambahkan ini
+        },
+        majorForMatching
+      );
+
+      return { ...major, score };
+    });
+
+    // 3. Urutkan & Ambil Top 10
+    const topMajors = matchedMajors.sort((a, b) => b.score - a.score).slice(0, 10);
+
+    // 4. Simpan Hasil Rekomendasi
+    await prisma.userRecommendation.create({
+      data: { userId, recommendations: JSON.stringify(topMajors) }
     });
 
     return NextResponse.json({
